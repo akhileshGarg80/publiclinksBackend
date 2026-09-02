@@ -1,0 +1,49 @@
+{
+  "templateId": "template-05",
+  "name": "Local Business & WhatsApp Store",
+  "category": "Local Services & Stores",
+  "description": "Streamlined local merchant profile with click-to-chat WhatsApp ordering and location.",
+  "previewImage": "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=600&q=80",
+  "theme": {
+    "accentColor": "#16A34A",
+    "layout": "local-store"
+  },
+  "fields": {
+    "name": {
+      "type": "text",
+      "label": "Business Name",
+      "placeholder": "e.g. Satna Organic Spices",
+      "required": true
+    },
+    "description": {
+      "type": "textarea",
+      "label": "Store Description & Timings",
+      "required": false
+    },
+    "logo": {
+      "type": "image",
+      "label": "Store Logo / Front Photo",
+      "required": true
+    },
+    "price": {
+      "type": "number",
+      "label": "Average Order Value / Minimum Price",
+      "required": false
+    },
+    "location": {
+      "type": "location",
+      "label": "Store Address / Landmark",
+      "required": true
+    },
+    "whatsapp": {
+      "type": "social-links",
+      "label": "WhatsApp Order Number",
+      "required": true
+    },
+    "instagram": {
+      "type": "social-links",
+      "label": "Instagram Handle / Link",
+      "required": false
+    }
+  }
+}

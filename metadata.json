@@ -1,0 +1,6 @@
+{
+  "name": "Business Profile Platform Backend API",
+  "description": "Multi-tenant dynamic template-based business profile platform backend API with flexible master data, subdomain resolution, trusted JSON template validation, and secure edit sessions.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
