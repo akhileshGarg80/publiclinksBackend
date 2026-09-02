@@ -695,8 +695,11 @@
         const template = json.template || json.data || json;
         
         if (template && (template.templateId || template.id)) {
-          currentSelectedTemplate = template;
           const currentId = template.templateId || template.id;
+          template.id = currentId;
+          template.templateId = currentId;
+          currentSelectedTemplate = template;
+          
           document.getElementById('selectedTemplateBadge').innerText = currentId;
           renderTemplateCards(availableTemplates);
           
@@ -1090,7 +1093,8 @@
 
       try {
         const subdomain = document.getElementById('subdomainInput').value.trim().toLowerCase();
-        const templateId = currentSelectedTemplate ? currentSelectedTemplate.id : 'template-01';
+        const badgeTemplate = document.getElementById('selectedTemplateBadge') ? document.getElementById('selectedTemplateBadge').innerText.trim() : '';
+        const templateId = (currentSelectedTemplate && (currentSelectedTemplate.templateId || currentSelectedTemplate.id)) || badgeTemplate || 'template-01';
         const passwordEnabled = document.getElementById('enablePasswordCheckbox').checked;
         const password = passwordEnabled ? document.getElementById('profilePasswordInput').value : '';
 
@@ -1137,7 +1141,7 @@
 
         if (res.ok && json.success) {
           showToast(`Profile "${subdomain}" created successfully!`, 'success');
-          saveProfileToLocalStorage(json.data);
+          saveProfileToLocalStorage(json.profile || json.data || { subdomain, templateId });
           
           // Switch to View Tab and automatically render the profile!
           setTimeout(() => {

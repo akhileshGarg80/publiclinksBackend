@@ -240,7 +240,8 @@ export function validateDataAgainstTemplate(templateId, data) {
  * Express middleware to validate templateId and incoming data in request body
  */
 export function validateTemplateAndDataMiddleware(req, res, next) {
-  const { templateId, data } = req.body;
+  const templateId = req.body.templateId || req.body.id || req.body.template;
+  const { data } = req.body;
 
   if (!templateId) {
     return res.status(400).json({
@@ -248,6 +249,8 @@ export function validateTemplateAndDataMiddleware(req, res, next) {
       error: 'templateId is required'
     });
   }
+
+  req.body.templateId = templateId;
 
   const validation = validateDataAgainstTemplate(templateId, data);
   if (!validation.valid) {

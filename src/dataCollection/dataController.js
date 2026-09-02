@@ -165,7 +165,8 @@ export async function checkSubdomainAvailability(req, res) {
  */
 export async function createProfile(req, res) {
   try {
-    const { templateId, subdomain, data, password, isPublished } = req.body;
+    const templateId = req.body.templateId || req.body.id || req.body.template;
+    const { subdomain, data, password, isPublished } = req.body;
 
     // 1. Subdomain validation
     const subValidation = validateSubdomainString(subdomain);
