@@ -114,8 +114,12 @@ app.get('/api/health', (req, res) => {
 // ============================================================================
 app.use('/api', dataRoutes);
 
-// Direct route to serve the standalone mainsite.html client
+// Direct route to serve the standalone mainsite.html client and standalone profile pages
 app.get('/mainsite.html', (req, res) => {
+  res.sendFile(path.join(process.cwd(), 'mainsite.html'));
+});
+
+app.get(['/profile/:subdomain', '/p/:subdomain'], (req, res) => {
   res.sendFile(path.join(process.cwd(), 'mainsite.html'));
 });
 

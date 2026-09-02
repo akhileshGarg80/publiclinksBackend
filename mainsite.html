@@ -55,8 +55,33 @@
 <body class="bg-slate-50 text-slate-900 min-h-screen antialiased flex flex-col">
 
   <!-- ========================================================================= -->
-  <!-- 1. Top Navigation & Backend API Configuration Bar -->
+  <!-- Standalone Pure Template Container (Full Page Public View) -->
   <!-- ========================================================================= -->
+  <div id="standaloneProfileContainer" class="hidden min-h-screen w-full relative">
+    <!-- Rendered purely here without any builder chrome -->
+    <div id="standaloneProfileContent" class="w-full min-h-screen"></div>
+
+    <!-- Floating Public / Owner Utility Bar -->
+    <div id="standaloneFloatingBar" class="fixed bottom-4 right-4 z-50 flex items-center gap-2 bg-slate-900/90 text-white px-3.5 py-2 rounded-2xl shadow-2xl backdrop-blur-md border border-slate-700/60 text-xs">
+      <span class="flex items-center gap-1.5 text-emerald-400 font-bold pr-1">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span id="standaloneStatusBadge">Live Profile</span>
+      </span>
+      <button onclick="copyStandaloneUrl()" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded-xl transition flex items-center gap-1 font-semibold text-slate-200">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+        Copy Link
+      </button>
+      <button onclick="switchToBuilderMode()" class="px-2.5 py-1 bg-sky-600 hover:bg-sky-500 text-white rounded-xl transition flex items-center gap-1 font-semibold">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        Creator Studio
+      </button>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- Creator Studio & Platform Builder Container -->
+  <!-- ========================================================================= -->
+  <div id="builderAppContainer" class="flex flex-col min-h-screen">
   <header class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex items-center justify-between h-16 gap-4">
@@ -345,12 +370,25 @@
         </div>
 
         <!-- Direct URL links for copy / test -->
-        <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 flex flex-wrap items-center justify-between gap-2 text-xs font-mono text-slate-600">
-          <div class="flex items-center gap-2 flex-1 min-w-[280px]">
-            <span class="text-slate-400 font-sans font-medium">Demo URL:</span>
-            <span id="demoDirectUrl" class="text-sky-700 font-bold truncate">http://127.0.0.1:5500/publiclinksBackend/mainsite.html?subdomain=abcshop</span>
+        <div class="bg-gradient-to-r from-sky-50 to-indigo-50 p-4 rounded-xl border border-sky-100 flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs">
+          <div class="space-y-1">
+            <span class="text-xs font-bold text-sky-900 uppercase tracking-wider">Clean Direct Public URL:</span>
+            <div class="font-mono text-sky-800 font-bold text-xs truncate select-all" id="demoDirectUrl">
+              http://127.0.0.1:5500/publiclinksBackend/mainsite.html?subdomain=abcshop
+            </div>
+            <p class="text-[11px] text-slate-500 font-sans">
+              Opening this link displays <strong>only the pure template</strong> (full-screen public website) without the creator dashboard.
+            </p>
           </div>
-          <button onclick="copyToClipboard('demoDirectUrl', true)" class="px-2.5 py-1 bg-white border border-slate-200 rounded text-slate-700 hover:bg-slate-100 font-sans font-semibold text-xs">Copy URL</button>
+          <div class="flex items-center gap-2 shrink-0">
+            <button onclick="openCurrentSubdomainInNewTab()" class="px-3 py-1.5 bg-sky-600 hover:bg-sky-700 text-white rounded-lg font-semibold transition flex items-center gap-1.5 shadow-xs">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+              Open Clean Template ↗
+            </button>
+            <button onclick="copyToClipboard('demoDirectUrl', true)" class="px-3 py-1.5 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 rounded-lg font-semibold transition flex items-center gap-1">
+              📋 Copy Link
+            </button>
+          </div>
         </div>
       </div>
 
@@ -539,48 +577,92 @@
       <span class="font-mono text-[11px] text-slate-400">Supports Live Server (5500) & Localhost (5000 / 3000)</span>
     </div>
   </footer>
+  </div><!-- /builderAppContainer -->
 
   <!-- ========================================================================= -->
   <!-- JavaScript Client Core Logic -->
   <!-- ========================================================================= -->
   <script>
     // --- Global State ---
-    let API_BASE_URL = 'http://localhost:5000';
+    let API_BASE_URL = localStorage.getItem('preferred_api_base_url') || (window.location.port === '3000' || window.location.port === '5000' ? window.location.origin : 'http://localhost:3000');
     let availableTemplates = [];
     let currentSelectedTemplate = null;
     let currentEditSessionToken = null;
     let currentEditingProfile = null;
     let subdomainDebounceTimer = null;
+    let isCurrentlyStandalone = false;
+    let activeProfileSubdomain = null;
 
     // --- On Initialization ---
     window.addEventListener('DOMContentLoaded', async () => {
-      // 1. Resolve URL params for custom backend or subdomain
       const urlParams = new URLSearchParams(window.location.search);
       const apiParam = urlParams.get('api');
-      const subParam = urlParams.get('subdomain') || urlParams.get('sub');
+      const isExplicitBuilder = urlParams.get('mode') === 'builder' || urlParams.get('builder') === 'true';
 
       if (apiParam) {
-        API_BASE_URL = apiParam;
+        API_BASE_URL = apiParam.replace(/\/+$/, '');
+        localStorage.setItem('preferred_api_base_url', API_BASE_URL);
       } else if (window.location.port === '5000' || window.location.port === '3000') {
         API_BASE_URL = window.location.origin;
       }
-      
+
       document.getElementById('backendUrlInput').value = API_BASE_URL;
       const mobileInput = document.getElementById('backendUrlInputMobile');
       if (mobileInput) mobileInput.value = API_BASE_URL;
 
-      // 2. Test Connection and load templates
+      const detectedSub = detectRequestedSubdomain();
+
+      // IF a subdomain is requested and not in explicit builder mode, go straight to STANDALONE TEMPLATE MODE!
+      if (detectedSub && !isExplicitBuilder) {
+        isCurrentlyStandalone = true;
+        activeProfileSubdomain = detectedSub;
+        document.getElementById('builderAppContainer').classList.add('hidden');
+        document.getElementById('standaloneProfileContainer').classList.remove('hidden');
+        
+        // Connect backend quietly & render pure template
+        await autoConnectAndRenderStandalone(detectedSub);
+        return;
+      }
+
+      // Normal Builder Mode
       await testAndApplyBackendUrl();
 
-      // 3. If subdomain param is given, automatically switch to view tab
-      if (subParam) {
-        document.getElementById('viewSubdomainInput').value = subParam;
+      if (detectedSub) {
+        document.getElementById('viewSubdomainInput').value = detectedSub;
         switchTab('view');
-        await fetchAndRenderPublicProfile(subParam);
+        await fetchAndRenderPublicProfile(detectedSub);
       }
 
       renderSavedProfilesWidget();
     });
+
+    // Detect subdomain from queries, hash, or paths
+    function detectRequestedSubdomain() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const sub = urlParams.get('subdomain') || urlParams.get('sub') || urlParams.get('p') || urlParams.get('profile');
+      if (sub) return sub.trim().toLowerCase();
+
+      if (window.location.hash) {
+        const hash = window.location.hash.replace(/^#/, '').trim();
+        if (hash.includes('=')) {
+          const hashParams = new URLSearchParams(hash);
+          const hashSub = hashParams.get('subdomain') || hashParams.get('p') || hashParams.get('sub');
+          if (hashSub) return hashSub.trim().toLowerCase();
+        } else if (hash && !hash.startsWith('view-') && !hash.startsWith('tab-') && !hash.startsWith('create')) {
+          return hash.toLowerCase();
+        }
+      }
+
+      const pathParts = window.location.pathname.split('/').filter(Boolean);
+      if (pathParts.length >= 2) {
+        const lastPart = pathParts[pathParts.length - 1];
+        const prevPart = pathParts[pathParts.length - 2];
+        if (prevPart === 'profile' || prevPart === 'p' || prevPart === 'mainsite.html') {
+          return lastPart.toLowerCase();
+        }
+      }
+      return null;
+    }
 
     // --- 1. Backend URL & Health Manager ---
     async function testAndApplyBackendUrl() {
@@ -1164,10 +1246,123 @@
       }
     }
 
+    // --- Standalone Pure Template Mode Engine ---
+    async function autoConnectAndRenderStandalone(subdomain) {
+      const container = document.getElementById('standaloneProfileContent');
+      container.innerHTML = `
+        <div class="min-h-screen flex flex-col items-center justify-center bg-slate-900 text-white p-6">
+          <div class="w-12 h-12 border-3 border-sky-400 border-t-transparent rounded-full animate-spin mb-4"></div>
+          <h2 class="text-xl font-bold tracking-tight">Loading Profile...</h2>
+          <p class="text-slate-400 text-sm mt-1 font-mono">${subdomain}</p>
+        </div>
+      `;
+
+      // Try candidate endpoints to connect reliably
+      const candidateUrls = [
+        API_BASE_URL,
+        window.location.origin,
+        'http://localhost:3000',
+        'http://localhost:5000'
+      ];
+
+      let fetchedData = null;
+      for (const base of candidateUrls) {
+        try {
+          const res = await fetch(`${base}/api/profiles/${encodeURIComponent(subdomain)}`, {
+            headers: { 'x-subdomain': subdomain }
+          });
+          if (res.ok) {
+            const json = await res.json();
+            if (json.success && json.data) {
+              fetchedData = json.data;
+              API_BASE_URL = base;
+              break;
+            }
+          }
+        } catch (e) {
+          // continue checking candidates
+        }
+      }
+
+      // Check localStorage if server is offline or not found
+      if (!fetchedData) {
+        fetchedData = getLocalSavedProfile(subdomain);
+      }
+
+      if (fetchedData) {
+        document.title = `${fetchedData.data?.businessName || fetchedData.data?.fullName || subdomain} • Profile`;
+        renderTemplateView(fetchedData, container, true);
+      } else {
+        container.innerHTML = `
+          <div class="min-h-screen flex flex-col items-center justify-center bg-slate-950 text-white p-6 text-center">
+            <div class="w-16 h-16 rounded-3xl bg-red-500/10 border border-red-500/30 text-red-400 flex items-center justify-center text-2xl font-bold mb-4">✕</div>
+            <h1 class="text-2xl font-bold text-slate-100">Profile Not Found</h1>
+            <p class="text-slate-400 text-sm max-w-md mt-2">The profile for <span class="text-sky-400 font-mono font-semibold">"${subdomain}"</span> has not been published yet or the server is starting up.</p>
+            <div class="mt-6 flex flex-wrap items-center justify-center gap-3">
+              <button onclick="window.location.reload()" class="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold rounded-xl transition">Retry Refresh</button>
+              <button onclick="switchToBuilderMode()" class="px-5 py-2.5 bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold rounded-xl transition">Open Creator Studio</button>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    function getLocalSavedProfile(subdomain) {
+      try {
+        const raw = localStorage.getItem('bp_saved_profiles');
+        if (!raw) return null;
+        const list = JSON.parse(raw);
+        const match = list.find(p => p.subdomain && p.subdomain.toLowerCase() === subdomain.toLowerCase());
+        if (match) {
+          return {
+            subdomain: match.subdomain,
+            templateId: match.templateId || 'template-01',
+            data: match.data || {
+              businessName: match.subdomain,
+              tagline: 'Published via Business Profile Platform',
+              aboutText: 'Live Profile Data'
+            },
+            isPublished: true
+          };
+        }
+      } catch (e) {
+        return null;
+      }
+      return null;
+    }
+
+    function copyStandaloneUrl() {
+      const url = `${window.location.origin}${window.location.pathname}?subdomain=${encodeURIComponent(activeProfileSubdomain || detectRequestedSubdomain() || '')}`;
+      navigator.clipboard.writeText(url).then(() => {
+        showToast('Clean Profile URL copied to clipboard!', 'success');
+      }).catch(() => {
+        showToast('Failed to copy', 'error');
+      });
+    }
+
+    function openCurrentSubdomainInNewTab() {
+      const sub = document.getElementById('viewSubdomainInput').value.trim() || 'demo';
+      const cleanUrl = `${window.location.origin}${window.location.pathname}?subdomain=${encodeURIComponent(sub)}`;
+      window.open(cleanUrl, '_blank');
+    }
+
+    function switchToBuilderMode() {
+      isCurrentlyStandalone = false;
+      document.getElementById('standaloneProfileContainer').classList.add('hidden');
+      document.getElementById('builderAppContainer').classList.remove('hidden');
+      const sub = activeProfileSubdomain || detectRequestedSubdomain();
+      if (sub) {
+        document.getElementById('viewSubdomainInput').value = sub;
+        switchTab('view');
+        fetchAndRenderPublicProfile(sub);
+      }
+    }
+
     // --- 5. View Profile & Live Template Visualizer ---
     async function fetchAndRenderPublicProfile(subdomain) {
       if (!subdomain) return;
       subdomain = subdomain.trim().toLowerCase();
+      activeProfileSubdomain = subdomain;
 
       const wrapper = document.getElementById('renderedProfileWrapper');
       wrapper.innerHTML = `
@@ -1180,36 +1375,39 @@
       // Update demo URL link
       document.getElementById('demoDirectUrl').innerText = `${window.location.origin}${window.location.pathname}?subdomain=${subdomain}`;
 
+      let profileData = null;
       try {
         const res = await fetch(`${API_BASE_URL}/api/profiles/${encodeURIComponent(subdomain)}`, {
           headers: { 'x-subdomain': subdomain }
         });
         const json = await res.json();
-
         if (res.ok && json.success && json.data) {
-          renderTemplateView(json.data, wrapper);
-        } else {
-          wrapper.innerHTML = `
-            <div class="p-12 text-center text-slate-500 space-y-3">
-              <div class="w-12 h-12 rounded-full bg-red-50 text-red-500 flex items-center justify-center mx-auto text-xl font-bold">✕</div>
-              <h3 class="text-lg font-bold text-slate-800">Profile Not Found</h3>
-              <p class="text-xs text-slate-500 max-w-sm mx-auto">${json.error || 'No active profile matches this subdomain.'}</p>
-              <button onclick="switchTab('create')" class="px-4 py-2 bg-sky-600 text-white rounded-xl text-xs font-semibold">Create "${subdomain}" Now</button>
-            </div>
-          `;
+          profileData = json.data;
         }
       } catch (err) {
+        // Fallback to local storage if network fails
+      }
+
+      if (!profileData) {
+        profileData = getLocalSavedProfile(subdomain);
+      }
+
+      if (profileData) {
+        renderTemplateView(profileData, wrapper, false);
+      } else {
         wrapper.innerHTML = `
-          <div class="p-12 text-center text-red-500 space-y-2">
-            <h3 class="font-bold">Error Fetching Profile</h3>
-            <p class="text-xs text-slate-500">${err.message}</p>
+          <div class="p-12 text-center text-slate-500 space-y-3">
+            <div class="w-12 h-12 rounded-full bg-red-50 text-red-500 flex items-center justify-center mx-auto text-xl font-bold">✕</div>
+            <h3 class="text-lg font-bold text-slate-800">Profile Not Found</h3>
+            <p class="text-xs text-slate-500 max-w-sm mx-auto">No published profile matches "${subdomain}". You can create it now in Step 1.</p>
+            <button onclick="switchTab('create')" class="px-4 py-2 bg-sky-600 text-white rounded-xl text-xs font-semibold">Create "${subdomain}" Now</button>
           </div>
         `;
       }
     }
 
-    // Custom Visual Renderer according to template design archetypes
-    function renderTemplateView(profile, container) {
+    // --- Archetype-Specific Template Renderers ---
+    function renderTemplateView(profile, container, isStandalone = false) {
       const data = profile.data || {};
       const tId = profile.templateId || 'template-01';
       
@@ -1220,21 +1418,174 @@
       const address = data.address || data.location || '';
       const bannerUrl = data.bannerImage || data.coverImage || data.heroImage || 'https://images.unsplash.com/photo-1557804506-669a67965ba0?auto=format&fit=crop&w=1200&q=80';
       const avatarUrl = data.logoUrl || data.avatarUrl || data.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(title)}&background=0284c7&color=fff&size=128`;
+      const cleanPhone = phone.replace(/[^0-9]/g, '');
 
-      let servicesOrProducts = data.services || data.products || data.portfolioItems || [];
-      if (typeof servicesOrProducts === 'string') {
-        try { servicesOrProducts = JSON.parse(servicesOrProducts); } catch (e) { servicesOrProducts = []; }
+      let items = data.services || data.products || data.portfolioItems || data.menuItems || [];
+      if (typeof items === 'string') {
+        try { items = JSON.parse(items); } catch (e) { items = []; }
       }
 
-      // Template 02 (Dark Luxury Glass) vs Standard Clean Modern
-      const isDarkTheme = tId === 'template-02';
+      // 1. Template-01: Minimal Clean Digital Card
+      if (tId === 'template-01') {
+        container.innerHTML = `
+          <div class="w-full ${isStandalone ? 'min-h-screen' : 'min-h-[580px]'} bg-gradient-to-b from-slate-100 via-slate-50 to-slate-200 py-12 px-4 flex items-center justify-center">
+            <div class="w-full max-w-md bg-white rounded-3xl shadow-xl border border-slate-200/80 overflow-hidden text-center p-8 space-y-6">
+              
+              <!-- Avatar -->
+              <div class="relative inline-block mx-auto">
+                <img src="${avatarUrl}" alt="${title}" class="w-28 h-28 rounded-full object-cover border-4 border-white shadow-md mx-auto" />
+                <span class="absolute bottom-1 right-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-white" title="Verified Online"></span>
+              </div>
 
+              <!-- Header Info -->
+              <div class="space-y-2">
+                <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">${title}</h1>
+                <p class="text-sm font-medium text-slate-600">${tagline}</p>
+                ${address ? `<p class="text-xs text-slate-400 flex items-center justify-center gap-1"><span>📍</span> ${address}</p>` : ''}
+              </div>
+
+              <!-- Primary Action Links -->
+              <div class="space-y-2.5 pt-2">
+                ${cleanPhone ? `
+                  <a href="https://wa.me/${cleanPhone}?text=Hello%20${encodeURIComponent(title)}" target="_blank" class="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-2xl transition flex items-center justify-center gap-2 shadow-sm">
+                    <span>💬</span> Chat on WhatsApp
+                  </a>
+                ` : ''}
+                ${phone ? `
+                  <a href="tel:${phone}" class="w-full py-3 px-4 bg-slate-900 hover:bg-black text-white font-bold text-sm rounded-2xl transition flex items-center justify-center gap-2 shadow-sm">
+                    <span>📞</span> Call Direct (${phone})
+                  </a>
+                ` : ''}
+                ${email ? `
+                  <a href="mailto:${email}" class="w-full py-3 px-4 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-sm rounded-2xl transition flex items-center justify-center gap-2 border border-slate-200">
+                    <span>✉️</span> Send Email (${email})
+                  </a>
+                ` : ''}
+                ${data.websiteUrl ? `
+                  <a href="${data.websiteUrl}" target="_blank" class="w-full py-3 px-4 bg-sky-50 hover:bg-sky-100 text-sky-700 font-bold text-sm rounded-2xl transition flex items-center justify-center gap-2 border border-sky-200">
+                    <span>🌐</span> Visit Website
+                  </a>
+                ` : ''}
+              </div>
+
+              <!-- Offerings / Highlights -->
+              ${items.length > 0 ? `
+                <div class="pt-4 border-t border-slate-100 space-y-2 text-left">
+                  <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider text-center">Offerings</h4>
+                  <div class="space-y-2">
+                    ${items.map(it => `
+                      <div class="p-3 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between text-xs">
+                        <span class="font-bold text-slate-800">${it.name || it.title || 'Service'}</span>
+                        ${it.price ? `<span class="font-bold text-emerald-600">${it.price}</span>` : ''}
+                      </div>
+                    `).join('')}
+                  </div>
+                </div>
+              ` : ''}
+
+              <!-- Social Links -->
+              <div class="pt-2 flex items-center justify-center gap-4 text-xs font-semibold text-slate-500">
+                ${data.instagram ? `<a href="https://instagram.com/${data.instagram}" target="_blank" class="hover:text-pink-600">📸 Instagram</a>` : ''}
+                ${data.facebook ? `<a href="https://facebook.com/${data.facebook}" target="_blank" class="hover:text-blue-600">📘 Facebook</a>` : ''}
+              </div>
+
+              <div class="text-[11px] text-slate-400 font-mono pt-2">
+                ${profile.subdomain}.${window.location.hostname}
+              </div>
+
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      // 2. Template-02: Product Catalog & Luxury Showcase
+      if (tId === 'template-02') {
+        container.innerHTML = `
+          <div class="w-full ${isStandalone ? 'min-h-screen' : 'min-h-[600px]'} bg-slate-950 text-white pb-16">
+            
+            <!-- Hero with banner -->
+            <div class="relative h-64 sm:h-80 w-full overflow-hidden">
+              <img src="${bannerUrl}" alt="${title}" class="w-full h-full object-cover opacity-60" />
+              <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/60 to-transparent"></div>
+              
+              <div class="absolute top-4 right-4 bg-slate-900/80 backdrop-blur-md px-3 py-1 rounded-full text-xs font-mono text-amber-400 border border-amber-500/30">
+                Catalog Mode • ${profile.subdomain}
+              </div>
+            </div>
+
+            <!-- Profile Info Bar -->
+            <div class="max-w-5xl mx-auto px-6 -mt-20 relative z-10 space-y-8">
+              <div class="flex flex-col sm:flex-row items-center sm:items-end justify-between gap-6 border-b border-slate-800 pb-6 text-center sm:text-left">
+                <div class="flex flex-col sm:flex-row items-center sm:items-end gap-5">
+                  <img src="${avatarUrl}" alt="${title}" class="w-28 h-28 rounded-2xl object-cover border-2 border-amber-500/50 shadow-2xl bg-slate-900" />
+                  <div class="space-y-1">
+                    <h1 class="text-3xl font-extrabold text-white tracking-tight">${title}</h1>
+                    <p class="text-slate-400 text-sm max-w-xl font-medium">${tagline}</p>
+                    <div class="text-xs text-amber-400/90 font-mono">📍 ${address || 'Online Store'}</div>
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-3">
+                  ${cleanPhone ? `
+                    <a href="https://wa.me/${cleanPhone}?text=Hi%20${encodeURIComponent(title)},%20I%20want%20to%20place%20an%20order" target="_blank" class="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-extrabold text-xs rounded-xl shadow-lg transition">
+                      WhatsApp Order 🛒
+                    </a>
+                  ` : ''}
+                  ${phone ? `
+                    <a href="tel:${phone}" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-xl border border-slate-700 transition">
+                      Call Store
+                    </a>
+                  ` : ''}
+                </div>
+              </div>
+
+              <!-- Product / Service Grid -->
+              <div class="space-y-4">
+                <div class="flex items-center justify-between">
+                  <h3 class="text-lg font-bold text-slate-100">Featured Products & Catalog</h3>
+                  <span class="text-xs text-slate-500 font-mono">${items.length} items</span>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
+                  ${(items.length > 0 ? items : [
+                    { name: 'Featured Collection #1', price: '$49.00', description: 'Premium selection made with top quality craftsmanship.' },
+                    { name: 'Signature Series #2', price: '$89.00', description: 'Best-selling flagship product with full warranty.' },
+                    { name: 'Custom Package #3', price: '$120.00', description: 'Tailored specifically to your custom specifications.' }
+                  ]).map(it => `
+                    <div class="bg-slate-900/90 border border-slate-800 hover:border-amber-500/50 rounded-2xl p-5 space-y-3 transition flex flex-col justify-between group">
+                      <div class="space-y-2">
+                        <div class="flex items-start justify-between gap-2">
+                          <h4 class="font-bold text-white text-base group-hover:text-amber-400 transition">${it.name || it.title}</h4>
+                          <span class="px-2.5 py-1 bg-amber-500/10 text-amber-400 border border-amber-500/20 text-xs font-bold rounded-lg">${it.price || '$--'}</span>
+                        </div>
+                        <p class="text-xs text-slate-400 leading-relaxed">${it.description || it.desc || 'High quality item available now.'}</p>
+                      </div>
+
+                      ${cleanPhone ? `
+                        <a href="https://wa.me/${cleanPhone}?text=I%20am%20interested%20in%20${encodeURIComponent(it.name || it.title || 'Product')}" target="_blank" class="mt-4 w-full py-2 bg-slate-800 hover:bg-emerald-600 text-slate-200 hover:text-white text-xs font-bold rounded-xl transition text-center block">
+                          Order This Item →
+                        </a>
+                      ` : ''}
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      // Default Clean Business Profile Archetype (template-03, template-05, template-07, etc.)
+      const isDarkTheme = tId === 'template-03';
       container.innerHTML = `
-        <div class="${isDarkTheme ? 'bg-slate-950 text-white' : 'bg-white text-slate-900'} transition min-h-[600px]">
+        <div class="${isDarkTheme ? 'bg-slate-950 text-white' : 'bg-white text-slate-900'} transition ${isStandalone ? 'min-h-screen' : 'min-h-[600px]'} pb-16">
           
           <!-- Hero Banner -->
-          <div class="relative h-56 sm:h-72 w-full bg-slate-800 overflow-hidden">
-            <img src="${bannerUrl}" alt="Hero Banner" class="w-full h-full object-cover opacity-80" onerror="this.src='https://images.unsplash.com/photo-1557804506-669a67965ba0?auto=format&fit=crop&w=1200&q=80'" />
+          <div class="relative h-60 sm:h-72 w-full bg-slate-800 overflow-hidden">
+            <img src="${bannerUrl}" alt="Hero Banner" class="w-full h-full object-cover opacity-80" />
             <div class="absolute inset-0 bg-gradient-to-t ${isDarkTheme ? 'from-slate-950 via-slate-950/40' : 'from-white via-white/20'} to-transparent"></div>
             
             <div class="absolute top-4 right-4 flex items-center gap-2">
@@ -1245,19 +1596,18 @@
           </div>
 
           <!-- Main Profile Header & Avatar -->
-          <div class="max-w-4xl mx-auto px-6 sm:px-8 -mt-20 relative z-10 space-y-6 pb-12">
+          <div class="max-w-5xl mx-auto px-6 sm:px-8 -mt-20 relative z-10 space-y-6">
             
             <div class="flex flex-col sm:flex-row items-center sm:items-end gap-5 text-center sm:text-left">
               <img 
                 src="${avatarUrl}" 
                 alt="${title}" 
                 class="w-32 h-32 rounded-2xl object-cover border-4 ${isDarkTheme ? 'border-slate-950 shadow-2xl' : 'border-white shadow-lg'} bg-white"
-                onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(title)}&background=0284c7&color=fff&size=128'"
               />
               <div class="flex-1 space-y-1">
                 <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2">
                   <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight">${title}</h1>
-                  <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold ${isDarkTheme ? 'bg-emerald-950 text-emerald-300 border border-emerald-800' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'}">Verified</span>
+                  <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold ${isDarkTheme ? 'bg-emerald-950 text-emerald-300 border border-emerald-800' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'}">Verified Profile</span>
                 </div>
                 <p class="${isDarkTheme ? 'text-slate-400' : 'text-slate-600'} text-sm sm:text-base font-medium max-w-xl">${tagline}</p>
                 <div class="text-xs font-mono ${isDarkTheme ? 'text-slate-500' : 'text-slate-400'}">
@@ -1267,8 +1617,13 @@
 
               <!-- Quick Action Buttons -->
               <div class="flex items-center gap-2 mt-2 sm:mt-0">
-                ${phone ? `<a href="tel:${phone}" class="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold rounded-xl shadow transition">Call Now</a>` : ''}
-                ${email ? `<a href="mailto:${email}" class="px-4 py-2 ${isDarkTheme ? 'bg-slate-800 hover:bg-slate-700 text-white' : 'bg-slate-100 hover:bg-slate-200 text-slate-800'} text-xs font-bold rounded-xl transition">Email</a>` : ''}
+                ${cleanPhone ? `
+                  <a href="https://wa.me/${cleanPhone}?text=Hello%20${encodeURIComponent(title)}" target="_blank" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow transition flex items-center gap-1.5">
+                    <span>💬</span> WhatsApp
+                  </a>
+                ` : ''}
+                ${phone ? `<a href="tel:${phone}" class="px-4 py-2.5 bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold rounded-xl shadow transition">Call</a>` : ''}
+                ${email ? `<a href="mailto:${email}" class="px-4 py-2.5 ${isDarkTheme ? 'bg-slate-800 hover:bg-slate-700 text-white' : 'bg-slate-100 hover:bg-slate-200 text-slate-800'} text-xs font-bold rounded-xl transition">Email</a>` : ''}
               </div>
             </div>
 
@@ -1309,12 +1664,12 @@
 
             </div>
 
-            <!-- Dynamic Services / Products Section if available -->
-            ${Array.isArray(servicesOrProducts) && servicesOrProducts.length > 0 ? `
+            <!-- Offerings Section -->
+            ${items.length > 0 ? `
               <div class="pt-6 space-y-4">
-                <h3 class="text-lg font-bold">Offerings & Highlights</h3>
+                <h3 class="text-lg font-bold">Services & Offerings</h3>
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                  ${servicesOrProducts.map(item => `
+                  ${items.map(item => `
                     <div class="${isDarkTheme ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'} p-4 rounded-xl border shadow-xs space-y-2">
                       <h5 class="font-bold text-sm">${item.name || item.title || 'Item'}</h5>
                       <p class="text-xs ${isDarkTheme ? 'text-slate-400' : 'text-slate-500'} leading-relaxed">${item.description || item.desc || ''}</p>
@@ -1324,14 +1679,6 @@
                 </div>
               </div>
             ` : ''}
-
-            <!-- Master Data Inspection Section -->
-            <div class="pt-6 border-t ${isDarkTheme ? 'border-slate-800' : 'border-slate-200'}">
-              <details class="cursor-pointer">
-                <summary class="text-xs font-mono font-semibold text-slate-400 hover:text-sky-500">View Full Master Data Dictionary (JSON)</summary>
-                <pre class="mt-3 p-4 rounded-xl ${isDarkTheme ? 'bg-slate-900 text-slate-300' : 'bg-slate-100 text-slate-800'} text-[11px] font-mono overflow-x-auto">${JSON.stringify(profile, null, 2)}</pre>
-              </details>
-            </div>
 
           </div>
 
@@ -1634,21 +1981,24 @@
 
     function saveProfileToLocalStorage(profile) {
       if (!profile || !profile.subdomain) return;
-      let list = JSON.parse(localStorage.getItem('saved_bp_profiles') || '[]');
-      list = list.filter(p => p.subdomain !== profile.subdomain);
+      let list = JSON.parse(localStorage.getItem('bp_saved_profiles') || localStorage.getItem('saved_bp_profiles') || '[]');
+      list = list.filter(p => p.subdomain && p.subdomain.toLowerCase() !== profile.subdomain.toLowerCase());
       list.unshift({
-        id: profile._id,
-        subdomain: profile.subdomain,
-        templateId: profile.templateId,
+        id: profile._id || profile.id,
+        subdomain: profile.subdomain.toLowerCase(),
+        templateId: profile.templateId || 'template-01',
+        data: profile.data || {},
         createdAt: new Date().toISOString()
       });
-      localStorage.setItem('saved_bp_profiles', JSON.stringify(list.slice(0, 10)));
+      const serialized = JSON.stringify(list.slice(0, 15));
+      localStorage.setItem('bp_saved_profiles', serialized);
+      localStorage.setItem('saved_bp_profiles', serialized);
       renderSavedProfilesWidget();
     }
 
     function renderSavedProfilesWidget() {
       const listContainer = document.getElementById('savedProfilesList');
-      const list = JSON.parse(localStorage.getItem('saved_bp_profiles') || '[]');
+      const list = JSON.parse(localStorage.getItem('bp_saved_profiles') || localStorage.getItem('saved_bp_profiles') || '[]');
       
       if (list.length === 0) {
         listContainer.innerHTML = '<div class="text-slate-400 italic text-center py-3">No profiles created yet</div>';
@@ -1658,19 +2008,25 @@
       listContainer.innerHTML = '';
       list.forEach(item => {
         const row = document.createElement('div');
-        row.className = 'flex items-center justify-between p-2 rounded-lg bg-slate-50 hover:bg-slate-100 border border-slate-200 transition';
+        row.className = 'flex items-center justify-between p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 transition';
         row.innerHTML = `
           <div>
-            <strong class="font-mono text-slate-800">${item.subdomain}</strong>
+            <strong class="font-mono text-slate-800 text-xs">${item.subdomain}</strong>
             <span class="text-[10px] text-slate-400 block">${item.templateId}</span>
           </div>
           <div class="flex items-center gap-1.5">
-            <button onclick="quickViewProfile('${item.subdomain}')" class="px-2 py-1 bg-white border border-slate-200 text-sky-700 font-semibold rounded hover:bg-sky-50 text-[10px]">View</button>
-            <button onclick="quickEditProfile('${item.subdomain}')" class="px-2 py-1 bg-white border border-slate-200 text-slate-700 font-semibold rounded hover:bg-slate-50 text-[10px]">Edit</button>
+            <button onclick="openStandaloneBySubdomain('${item.subdomain}')" class="px-2 py-1 bg-sky-600 hover:bg-sky-700 text-white font-semibold rounded-lg text-[10px] shadow-xs">Clean ↗</button>
+            <button onclick="quickViewProfile('${item.subdomain}')" class="px-2 py-1 bg-white border border-slate-200 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 text-[10px]">Preview</button>
+            <button onclick="quickEditProfile('${item.subdomain}')" class="px-2 py-1 bg-white border border-slate-200 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 text-[10px]">Edit</button>
           </div>
         `;
         listContainer.appendChild(row);
       });
+    }
+
+    function openStandaloneBySubdomain(subdomain) {
+      const url = `${window.location.origin}${window.location.pathname}?subdomain=${encodeURIComponent(subdomain)}`;
+      window.open(url, '_blank');
     }
 
     function quickViewProfile(subdomain) {
