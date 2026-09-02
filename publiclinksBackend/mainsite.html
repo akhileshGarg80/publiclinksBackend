@@ -1,0 +1,1484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Business Profile Platform — Demo & API Tester</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              500: '#0284c7',
+              600: '#0369a1',
+              700: '#075985',
+              900: '#0c4a6e',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  
+  <!-- Google Fonts: Inter & Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    .font-mono {
+      font-family: 'Space Mono', monospace;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen antialiased flex flex-col">
+
+  <!-- ========================================================================= -->
+  <!-- 1. Top Navigation & Backend API Configuration Bar -->
+  <!-- ========================================================================= -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16 gap-4">
+        
+        <!-- Logo / Brand -->
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-600 to-indigo-600 flex items-center justify-center text-white font-bold shadow-md shadow-sky-500/20 text-lg">
+            BP
+          </div>
+          <div>
+            <h1 class="font-bold text-slate-900 leading-none text-base sm:text-lg">Business Profile Platform</h1>
+            <span class="text-xs text-slate-500 font-medium">Standalone API & Subdomain Demo Client</span>
+          </div>
+        </div>
+
+        <!-- Backend URL Configuration -->
+        <div class="flex items-center gap-2 sm:gap-3">
+          <div class="relative hidden sm:flex items-center">
+            <span class="text-xs text-slate-400 font-semibold px-2">API:</span>
+            <input 
+              id="backendUrlInput" 
+              type="text" 
+              value="http://localhost:5000" 
+              placeholder="http://localhost:5000"
+              class="w-56 lg:w-64 px-2.5 py-1.5 text-xs bg-slate-100 border border-slate-200 rounded-lg text-slate-800 font-mono focus:outline-none focus:ring-2 focus:ring-sky-500 focus:bg-white"
+            />
+            <button 
+              id="btnChangeBackend" 
+              onclick="testAndApplyBackendUrl()"
+              class="ml-2 px-2.5 py-1.5 text-xs font-semibold text-white bg-slate-800 hover:bg-slate-900 rounded-lg transition"
+              title="Apply & Test Connection"
+            >
+              Connect
+            </button>
+          </div>
+
+          <!-- Quick Port Presets -->
+          <div class="hidden lg:flex items-center gap-1 bg-slate-100 p-1 rounded-lg border border-slate-200 text-[11px]">
+            <button onclick="setBackendPreset('http://localhost:5000')" class="px-2 py-0.5 rounded text-slate-600 hover:bg-white hover:shadow-xs transition font-mono">5000</button>
+            <button onclick="setBackendPreset('http://localhost:3000')" class="px-2 py-0.5 rounded text-slate-600 hover:bg-white hover:shadow-xs transition font-mono">3000</button>
+            <button onclick="setBackendPreset(window.location.origin)" class="px-2 py-0.5 rounded text-slate-600 hover:bg-white hover:shadow-xs transition">Origin</button>
+          </div>
+
+          <!-- Connection Status Pill -->
+          <div id="statusBadge" class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
+            <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+            <span id="statusText">Checking API...</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="bg-slate-50 border-t border-slate-200/80 px-4 sm:px-6 lg:px-8">
+      <div class="max-w-7xl mx-auto flex gap-2 sm:gap-6 overflow-x-auto custom-scrollbar">
+        <button onclick="switchTab('create')" id="tab-create" class="tab-btn active border-b-2 border-sky-600 text-sky-600 font-semibold py-3 px-1 text-sm flex items-center gap-2 whitespace-nowrap transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          1. Create Profile & Templates
+        </button>
+        <button onclick="switchTab('view')" id="tab-view" class="tab-btn border-b-2 border-transparent text-slate-500 hover:text-slate-800 font-medium py-3 px-1 text-sm flex items-center gap-2 whitespace-nowrap transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+          2. View Profile & Subdomain Demo
+        </button>
+        <button onclick="switchTab('edit')" id="tab-edit" class="tab-btn border-b-2 border-transparent text-slate-500 hover:text-slate-800 font-medium py-3 px-1 text-sm flex items-center gap-2 whitespace-nowrap transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+          3. Edit Profile & Switch Template
+        </button>
+        <button onclick="switchTab('raw')" id="tab-raw" class="tab-btn border-b-2 border-transparent text-slate-500 hover:text-slate-800 font-medium py-3 px-1 text-sm flex items-center gap-2 whitespace-nowrap transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+          4. Live API Console
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Mobile Backend URL input -->
+  <div class="sm:hidden bg-slate-100 border-b border-slate-200 p-3">
+    <div class="flex gap-2">
+      <input 
+        id="backendUrlInputMobile" 
+        type="text" 
+        value="http://localhost:5000" 
+        placeholder="http://localhost:5000"
+        class="flex-1 px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg text-slate-800 font-mono"
+        onchange="document.getElementById('backendUrlInput').value = this.value"
+      />
+      <button onclick="document.getElementById('backendUrlInput').value = document.getElementById('backendUrlInputMobile').value; testAndApplyBackendUrl();" class="px-3 py-1.5 text-xs bg-slate-800 text-white rounded-lg font-semibold">Connect</button>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 max-w-sm"></div>
+
+  <!-- ========================================================================= -->
+  <!-- Main Content Area -->
+  <!-- ========================================================================= -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+
+    <!-- ======================================================================= -->
+    <!-- TAB 1: CREATE PROFILE & TEMPLATE EXPLORER -->
+    <!-- ======================================================================= -->
+    <section id="view-create" class="tab-content space-y-6">
+      
+      <!-- Subdomain & Template Hero Banner -->
+      <div class="bg-white p-6 rounded-2xl border border-slate-200/90 shadow-sm flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+        <div>
+          <h2 class="text-xl font-bold text-slate-900">Create New Business Profile</h2>
+          <p class="text-sm text-slate-500 mt-1">Select a server-side trusted template, choose your unique subdomain, and submit dynamic master data.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="fillDemoData()" class="px-3.5 py-2 text-xs font-semibold text-sky-700 bg-sky-50 border border-sky-200 hover:bg-sky-100 rounded-xl transition flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            Auto-Fill Sample Data
+          </button>
+          <button onclick="refreshTemplatesList()" class="px-3.5 py-2 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            Reload Templates
+          </button>
+        </div>
+      </div>
+
+      <!-- Step 1: Template Selection Cards -->
+      <div>
+        <label class="block text-sm font-bold text-slate-800 mb-3 flex items-center gap-2">
+          <span class="w-5 h-5 rounded-full bg-sky-600 text-white text-xs flex items-center justify-center font-bold">1</span>
+          Select Template (<code class="text-xs bg-slate-100 px-1.5 py-0.5 rounded text-sky-800 font-mono">GET /api/templates</code>)
+        </label>
+        <div id="templatesGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
+          <!-- Template Cards loaded dynamically -->
+          <div class="animate-pulse bg-white p-4 rounded-xl border border-slate-200 h-32 flex items-center justify-center text-xs text-slate-400">Loading templates...</div>
+        </div>
+      </div>
+
+      <!-- Step 2: Subdomain & Master Data Dynamic Form -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Left 2 Cols: Dynamic Form -->
+        <div class="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+            <h3 class="font-bold text-slate-900 flex items-center gap-2">
+              <span class="w-5 h-5 rounded-full bg-sky-600 text-white text-xs flex items-center justify-center font-bold">2</span>
+              Profile Details & Subdomain
+            </h3>
+            <span id="selectedTemplateBadge" class="text-xs font-semibold px-2.5 py-1 rounded-md bg-slate-100 text-slate-700 font-mono">
+              template-01
+            </span>
+          </div>
+
+          <form id="createProfileForm" onsubmit="handleCreateProfileSubmit(event)" class="space-y-6">
+            
+            <!-- Subdomain Input with Live Checker -->
+            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2">
+              <div class="flex justify-between items-center">
+                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                  Subdomain Name <span class="text-red-500">*</span>
+                </label>
+                <div id="subdomainCheckBadge" class="text-xs font-medium text-slate-400 flex items-center gap-1">
+                  Type 3-30 letters or numbers
+                </div>
+              </div>
+              
+              <div class="flex items-stretch">
+                <input 
+                  id="subdomainInput" 
+                  type="text" 
+                  required
+                  pattern="[a-zA-Z0-9-]+"
+                  placeholder="e.g. abcshop"
+                  oninput="handleSubdomainInput(this.value)"
+                  class="flex-1 px-3.5 py-2.5 bg-white border border-slate-300 rounded-l-xl text-slate-900 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 font-bold"
+                />
+                <span id="domainSuffix" class="px-3.5 py-2.5 bg-slate-200 text-slate-600 border border-l-0 border-slate-300 rounded-r-xl text-xs font-mono flex items-center select-none font-medium">
+                  .yourdomain.com
+                </span>
+              </div>
+              <p class="text-[11px] text-slate-500">
+                Live validation checks availability on <code class="bg-slate-200/70 px-1 py-0.2 rounded font-mono">/api/profiles/check-subdomain/:subdomain</code>
+              </p>
+            </div>
+
+            <!-- Password Configuration (Optional/Protection) -->
+            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
+              <div class="flex items-center justify-between">
+                <div>
+                  <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Profile Edit Password</h4>
+                  <p class="text-xs text-slate-500">Secure your profile so only you can edit it later via bcrypt + JWT token</p>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                  <input type="checkbox" id="enablePasswordCheckbox" onchange="togglePasswordField(this.checked)" checked class="sr-only peer">
+                  <div class="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-sky-600"></div>
+                </label>
+              </div>
+              <div id="passwordInputContainer">
+                <input 
+                  id="profilePasswordInput" 
+                  type="password" 
+                  placeholder="Enter a secure password (e.g. Secret123!)" 
+                  value="Demo1234!"
+                  class="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                />
+              </div>
+            </div>
+
+            <!-- Dynamic Fields Rendered from Template JSON Schema -->
+            <div id="dynamicFieldsContainer" class="space-y-4">
+              <div class="text-center py-6 text-slate-400 text-sm">
+                Loading template schema fields...
+              </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="pt-4 border-t border-slate-100 flex items-center justify-between">
+              <button 
+                type="submit" 
+                id="btnSubmitProfile" 
+                class="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-700 hover:to-indigo-700 text-white font-bold text-sm rounded-xl shadow-md shadow-sky-500/20 transition flex items-center justify-center gap-2"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                Publish Profile (POST /api/profiles)
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Right 1 Col: Live JSON Inspector & Recent Profiles -->
+        <div class="space-y-6">
+          
+          <!-- Recent Created Profiles Widget -->
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+            <h4 class="font-bold text-xs uppercase tracking-wider text-slate-700 flex items-center justify-between">
+              <span>Your Saved Profiles</span>
+              <button onclick="clearSavedProfiles()" class="text-[11px] text-slate-400 hover:text-red-500 font-normal">Clear</button>
+            </h4>
+            <div id="savedProfilesList" class="space-y-2 max-h-48 overflow-y-auto custom-scrollbar text-xs">
+              <div class="text-slate-400 italic text-center py-3">No profiles created yet</div>
+            </div>
+          </div>
+
+          <!-- Server Response Output -->
+          <div class="bg-slate-900 text-slate-100 p-5 rounded-2xl border border-slate-800 shadow-sm space-y-3 font-mono">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+              <span class="text-xs font-bold text-sky-400 flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-sky-400"></span>
+                Response Inspector
+              </span>
+              <button onclick="copyToClipboard('createResponseLog')" class="text-[11px] text-slate-400 hover:text-white transition">Copy</button>
+            </div>
+            <pre id="createResponseLog" class="text-[11px] leading-relaxed max-h-72 overflow-y-auto custom-scrollbar text-slate-300">// Submit the form to see server response here</pre>
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- ======================================================================= -->
+    <!-- TAB 2: VIEW PROFILE & SUBDOMAIN DEMO -->
+    <!-- ======================================================================= -->
+    <section id="view-view" class="tab-content hidden space-y-6">
+      
+      <!-- Subdomain Fetch Bar -->
+      <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h2 class="text-xl font-bold text-slate-900">Public Profile & Subdomain Viewer</h2>
+            <p class="text-sm text-slate-500 mt-0.5">Fetches public data from <code class="bg-slate-100 px-1.5 py-0.5 rounded text-sky-800 text-xs font-mono">GET /api/profiles/:subdomain</code> and renders the active template.</p>
+          </div>
+          
+          <div class="flex items-center gap-2">
+            <input 
+              id="viewSubdomainInput" 
+              type="text" 
+              placeholder="e.g. abcshop" 
+              class="px-3.5 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500 font-bold w-44"
+            />
+            <button 
+              onclick="fetchAndRenderPublicProfile(document.getElementById('viewSubdomainInput').value)"
+              class="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white text-sm font-semibold rounded-xl transition shadow-sm flex items-center gap-1.5"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+              Fetch
+            </button>
+          </div>
+        </div>
+
+        <!-- Direct URL links for copy / test -->
+        <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 flex flex-wrap items-center justify-between gap-2 text-xs font-mono text-slate-600">
+          <div class="flex items-center gap-2 flex-1 min-w-[280px]">
+            <span class="text-slate-400 font-sans font-medium">Demo URL:</span>
+            <span id="demoDirectUrl" class="text-sky-700 font-bold truncate">http://127.0.0.1:5500/publiclinksBackend/mainsite.html?subdomain=abcshop</span>
+          </div>
+          <button onclick="copyToClipboard('demoDirectUrl', true)" class="px-2.5 py-1 bg-white border border-slate-200 rounded text-slate-700 hover:bg-slate-100 font-sans font-semibold text-xs">Copy URL</button>
+        </div>
+      </div>
+
+      <!-- Live Rendered Template Viewer -->
+      <div id="renderedProfileWrapper" class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden min-h-[500px]">
+        <div class="p-12 text-center text-slate-400 space-y-3">
+          <svg class="w-12 h-12 mx-auto text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+          <p class="font-medium text-slate-600">Enter a subdomain above or create a profile in Step 1 to render the live template.</p>
+          <button onclick="loadSamplePreview()" class="text-xs text-sky-600 font-semibold hover:underline">Load Demo Business Profile</button>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ======================================================================= -->
+    <!-- TAB 3: EDIT PROFILE & TEMPLATE SWITCHER -->
+    <!-- ======================================================================= -->
+    <section id="view-edit" class="tab-content hidden space-y-6">
+      
+      <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+        <h2 class="text-xl font-bold text-slate-900">Edit Profile & Switch Template</h2>
+        <p class="text-sm text-slate-500 mt-1">Verify password to receive a secure JWT Edit Session Token, update master data fields, or switch templates with 100% data preservation.</p>
+      </div>
+
+      <!-- Step A: Authentication / Unlock -->
+      <div id="editAuthBox" class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm max-w-xl mx-auto space-y-4">
+        <div class="flex items-center gap-3 border-b border-slate-100 pb-3">
+          <div class="w-8 h-8 rounded-full bg-sky-100 text-sky-700 flex items-center justify-center font-bold text-sm">🔑</div>
+          <div>
+            <h3 class="font-bold text-slate-900">Step 1: Unlock Profile for Editing</h3>
+            <p class="text-xs text-slate-500">Calls <code class="text-sky-700 font-mono">POST /api/profiles/:id/verify</code></p>
+          </div>
+        </div>
+
+        <div class="space-y-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Subdomain or Profile ID</label>
+            <input id="editSubdomainInput" type="text" placeholder="e.g. abcshop" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500" />
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Password</label>
+            <input id="editPasswordInput" type="password" placeholder="Enter profile password" value="Demo1234!" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500" />
+          </div>
+
+          <button onclick="handleVerifyPasswordForEdit()" class="w-full py-3 bg-slate-900 hover:bg-black text-white font-bold text-sm rounded-xl transition flex items-center justify-center gap-2">
+            <span>Verify & Start Edit Session</span>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Step B: Active Edit Session Form (Hidden until authenticated) -->
+      <div id="editSessionContainer" class="hidden space-y-6">
+        
+        <div class="bg-emerald-50 border border-emerald-200 p-4 rounded-2xl flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <span class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span>
+            <div>
+              <span class="text-xs font-bold text-emerald-900 uppercase tracking-wider">Active JWT Edit Session</span>
+              <p id="editSessionInfo" class="text-xs text-emerald-700 font-mono mt-0.5">Editing: abcshop</p>
+            </div>
+          </div>
+          <button onclick="logoutEditSession()" class="text-xs font-semibold text-emerald-800 hover:text-red-600 bg-white px-3 py-1.5 rounded-lg border border-emerald-300">
+            End Session
+          </button>
+        </div>
+
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+          
+          <!-- Template Switcher Bar -->
+          <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2">
+            <div class="flex justify-between items-center">
+              <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                Switch Template (Zero Data Loss)
+              </label>
+              <span class="text-[11px] text-slate-400">Master Data is preserved when switching</span>
+            </div>
+            <select id="editTemplateSelect" onchange="handleEditTemplateChange(this.value)" class="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500">
+              <!-- Filled dynamically -->
+            </select>
+          </div>
+
+          <!-- Dynamic Edit Form Fields -->
+          <form id="editProfileForm" onsubmit="handleSaveProfileEdit(event)" class="space-y-6">
+            <div id="editDynamicFieldsContainer" class="space-y-4">
+              <!-- Rendered dynamically from current template + current master data -->
+            </div>
+
+            <div class="pt-4 border-t border-slate-100 flex items-center justify-between">
+              <button 
+                type="submit" 
+                class="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-xl shadow-md shadow-emerald-600/20 transition flex items-center gap-2"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                Save Changes (PATCH /api/profiles/:id)
+              </button>
+            </div>
+          </form>
+
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- ======================================================================= -->
+    <!-- TAB 4: RAW API PLAYGROUND & CONSOLE -->
+    <!-- ======================================================================= -->
+    <section id="view-raw" class="tab-content hidden space-y-6">
+      
+      <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+        <div>
+          <h2 class="text-xl font-bold text-slate-900">Direct API Console & Tester</h2>
+          <p class="text-sm text-slate-500 mt-1">Execute manual HTTP requests against all 8 backend endpoints with full header & payload control.</p>
+        </div>
+      </div>
+
+      <!-- Endpoint Quick Buttons -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+        <button onclick="presetApiRequest('GET', '/api/health')" class="p-3 bg-white border border-slate-200 hover:border-sky-500 rounded-xl text-left transition shadow-xs">
+          <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">GET</span>
+          <p class="font-mono text-xs font-bold text-slate-800 mt-1">/api/health</p>
+          <span class="text-[10px] text-slate-400">Database & config check</span>
+        </button>
+        <button onclick="presetApiRequest('GET', '/api/templates')" class="p-3 bg-white border border-slate-200 hover:border-sky-500 rounded-xl text-left transition shadow-xs">
+          <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">GET</span>
+          <p class="font-mono text-xs font-bold text-slate-800 mt-1">/api/templates</p>
+          <span class="text-[10px] text-slate-400">List all templates</span>
+        </button>
+        <button onclick="presetApiRequest('GET', '/api/templates/template-01')" class="p-3 bg-white border border-slate-200 hover:border-sky-500 rounded-xl text-left transition shadow-xs">
+          <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">GET</span>
+          <p class="font-mono text-xs font-bold text-slate-800 mt-1">/api/templates/:id</p>
+          <span class="text-[10px] text-slate-400">Fetch template schema</span>
+        </button>
+        <button onclick="presetApiRequest('GET', '/api/profiles/check-subdomain/abcshop')" class="p-3 bg-white border border-slate-200 hover:border-sky-500 rounded-xl text-left transition shadow-xs">
+          <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">GET</span>
+          <p class="font-mono text-xs font-bold text-slate-800 mt-1">/check-subdomain/:sub</p>
+          <span class="text-[10px] text-slate-400">Check availability</span>
+        </button>
+      </div>
+
+      <!-- Request Builder Card -->
+      <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+        <div class="flex flex-col sm:flex-row gap-3">
+          <select id="rawMethod" class="w-28 px-3 py-2 bg-slate-100 border border-slate-300 rounded-xl font-bold text-xs text-slate-800 focus:outline-none">
+            <option value="GET">GET</option>
+            <option value="POST">POST</option>
+            <option value="PATCH">PATCH</option>
+            <option value="DELETE">DELETE</option>
+          </select>
+          <input id="rawEndpoint" type="text" value="/api/health" class="flex-1 px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl font-mono text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500" />
+          <button onclick="executeRawApiRequest()" class="px-6 py-2 bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs rounded-xl shadow-sm transition">
+            Send Request
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <!-- Request Headers / Body -->
+          <div class="space-y-2">
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Request Body (JSON)</label>
+            <textarea id="rawBody" rows="8" placeholder="{}" class="w-full p-3 bg-slate-900 text-slate-100 font-mono text-xs rounded-xl border border-slate-800 focus:outline-none custom-scrollbar"></textarea>
+          </div>
+
+          <!-- Response Inspector -->
+          <div class="space-y-2">
+            <div class="flex justify-between items-center">
+              <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Response</label>
+              <span id="rawStatusBadge" class="text-[10px] font-mono font-bold text-slate-400">Status: -</span>
+            </div>
+            <pre id="rawResponse" class="w-full p-3 bg-slate-950 text-slate-200 font-mono text-xs rounded-xl border border-slate-800 h-[170px] overflow-y-auto custom-scrollbar leading-relaxed">// Response will appear here</pre>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ========================================================================= -->
+  <!-- Footer -->
+  <!-- ========================================================================= -->
+  <footer class="bg-white border-t border-slate-200 py-4 px-6 text-center text-xs text-slate-500 mt-auto">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
+      <span>Business Profile Platform &copy; 2026. Self-contained demo client.</span>
+      <span class="font-mono text-[11px] text-slate-400">Supports Live Server (5500) & Localhost (5000 / 3000)</span>
+    </div>
+  </footer>
+
+  <!-- ========================================================================= -->
+  <!-- JavaScript Client Core Logic -->
+  <!-- ========================================================================= -->
+  <script>
+    // --- Global State ---
+    let API_BASE_URL = 'http://localhost:5000';
+    let availableTemplates = [];
+    let currentSelectedTemplate = null;
+    let currentEditSessionToken = null;
+    let currentEditingProfile = null;
+    let subdomainDebounceTimer = null;
+
+    // --- On Initialization ---
+    window.addEventListener('DOMContentLoaded', async () => {
+      // 1. Resolve URL params for custom backend or subdomain
+      const urlParams = new URLSearchParams(window.location.search);
+      const apiParam = urlParams.get('api');
+      const subParam = urlParams.get('subdomain') || urlParams.get('sub');
+
+      if (apiParam) {
+        API_BASE_URL = apiParam;
+      } else if (window.location.port === '5000' || window.location.port === '3000') {
+        API_BASE_URL = window.location.origin;
+      }
+      
+      document.getElementById('backendUrlInput').value = API_BASE_URL;
+      const mobileInput = document.getElementById('backendUrlInputMobile');
+      if (mobileInput) mobileInput.value = API_BASE_URL;
+
+      // 2. Test Connection and load templates
+      await testAndApplyBackendUrl();
+
+      // 3. If subdomain param is given, automatically switch to view tab
+      if (subParam) {
+        document.getElementById('viewSubdomainInput').value = subParam;
+        switchTab('view');
+        await fetchAndRenderPublicProfile(subParam);
+      }
+
+      renderSavedProfilesWidget();
+    });
+
+    // --- 1. Backend URL & Health Manager ---
+    async function testAndApplyBackendUrl() {
+      const input = document.getElementById('backendUrlInput').value.trim();
+      API_BASE_URL = input.replace(/\/+$/, ''); // Strip trailing slash
+
+      const badge = document.getElementById('statusBadge');
+      const text = document.getElementById('statusText');
+      
+      text.innerText = 'Connecting...';
+      badge.className = 'flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200';
+
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/health`);
+        const data = await res.json();
+
+        if (res.ok && data.status === 'online') {
+          const dbState = data.database ? data.database.status : 'ready';
+          text.innerText = `Online (${dbState === 'connected' ? 'DB Connected' : 'DB Initializing'})`;
+          badge.className = 'flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200';
+          
+          if (data.config && data.config.mainDomain) {
+            document.getElementById('domainSuffix').innerText = `.${data.config.mainDomain}`;
+          }
+
+          showToast('Connected to Backend API successfully!', 'success');
+          await loadAllTemplates();
+        } else {
+          throw new Error('API returned non-online status');
+        }
+      } catch (err) {
+        console.warn('Backend connection failed:', err);
+        text.innerText = 'API Offline (Check port)';
+        badge.className = 'flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-red-50 text-red-700 border border-red-200';
+        showToast(`Cannot reach ${API_BASE_URL}. Ensure backend server is running.`, 'error');
+      }
+    }
+
+    function setBackendPreset(url) {
+      document.getElementById('backendUrlInput').value = url;
+      const mobileInput = document.getElementById('backendUrlInputMobile');
+      if (mobileInput) mobileInput.value = url;
+      testAndApplyBackendUrl();
+    }
+
+    // --- 2. Template Loader & Dynamic Form Generator ---
+    async function loadAllTemplates() {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/templates`);
+        const json = await res.json();
+        
+        if (json.success && Array.isArray(json.data)) {
+          availableTemplates = json.data;
+          renderTemplateCards(availableTemplates);
+          
+          // Select first template by default if none selected
+          if (!currentSelectedTemplate && availableTemplates.length > 0) {
+            selectTemplate(availableTemplates[0].id);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load templates:', err);
+      }
+    }
+
+    function renderTemplateCards(templates) {
+      const grid = document.getElementById('templatesGrid');
+      grid.innerHTML = '';
+
+      templates.forEach(t => {
+        const isSelected = currentSelectedTemplate && currentSelectedTemplate.id === t.id;
+        const card = document.createElement('div');
+        card.className = `cursor-pointer p-4 rounded-xl border transition text-left flex flex-col justify-between ${
+          isSelected 
+            ? 'bg-sky-50 border-sky-500 ring-2 ring-sky-500/20 shadow-sm' 
+            : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+        }`;
+        card.onclick = () => selectTemplate(t.id);
+
+        card.innerHTML = `
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="font-mono text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-700">${t.id}</span>
+              <span class="text-[10px] text-slate-400 font-medium">${t.category || 'General'}</span>
+            </div>
+            <h4 class="font-bold text-slate-900 text-xs">${t.name}</h4>
+            <p class="text-[11px] text-slate-500 line-clamp-2 mt-1 leading-snug">${t.description || ''}</p>
+          </div>
+          <div class="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-400">
+            <span>Fields: ${t.fieldCount || (t.schema && t.schema.fields ? t.schema.fields.length : '-')}</span>
+            <span class="${isSelected ? 'text-sky-600 font-bold' : 'text-slate-400'}">${isSelected ? 'Selected ✓' : 'Select →'}</span>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    async function selectTemplate(templateId) {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/templates/${templateId}`);
+        const json = await res.json();
+        
+        if (json.success && json.data) {
+          currentSelectedTemplate = json.data;
+          document.getElementById('selectedTemplateBadge').innerText = currentSelectedTemplate.id;
+          renderTemplateCards(availableTemplates);
+          renderDynamicFormFields(currentSelectedTemplate.schema.fields, 'dynamicFieldsContainer', 'data.');
+        }
+      } catch (err) {
+        showToast(`Failed to load schema for ${templateId}`, 'error');
+      }
+    }
+
+    function renderDynamicFormFields(fields, containerId, prefix = 'data.', existingValues = {}) {
+      const container = document.getElementById(containerId);
+      container.innerHTML = '';
+
+      // Group fields by category or logical sections
+      const fieldGroups = {
+        'Basic Information': [],
+        'Contact & Location': [],
+        'Visuals & Media': [],
+        'Social & Links': [],
+        'Business Items & Others': []
+      };
+
+      fields.forEach(f => {
+        const name = f.name.toLowerCase();
+        if (name.includes('phone') || name.includes('email') || name.includes('address') || name.includes('city') || name.includes('map') || name.includes('whatsapp')) {
+          fieldGroups['Contact & Location'].push(f);
+        } else if (name.includes('image') || name.includes('banner') || name.includes('logo') || name.includes('avatar') || name.includes('photo') || name.includes('color')) {
+          fieldGroups['Visuals & Media'].push(f);
+        } else if (name.includes('social') || name.includes('instagram') || name.includes('facebook') || name.includes('twitter') || name.includes('linkedin') || name.includes('website')) {
+          fieldGroups['Social & Links'].push(f);
+        } else if (name.includes('service') || name.includes('product') || name.includes('hour') || name.includes('badge') || name.includes('tag')) {
+          fieldGroups['Business Items & Others'].push(f);
+        } else {
+          fieldGroups['Basic Information'].push(f);
+        }
+      });
+
+      Object.entries(fieldGroups).forEach(([groupName, groupFields]) => {
+        if (groupFields.length === 0) return;
+
+        const section = document.createElement('div');
+        section.className = 'space-y-3 pt-2';
+        section.innerHTML = `
+          <h4 class="text-xs font-bold text-slate-600 uppercase tracking-wider border-b border-slate-100 pb-1">${groupName}</h4>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5"></div>
+        `;
+        const grid = section.querySelector('div');
+
+        groupFields.forEach(field => {
+          const val = existingValues[field.name] !== undefined ? existingValues[field.name] : (field.defaultValue || '');
+          const isFullWidth = field.type === 'textarea' || field.type === 'array' || field.type === 'object';
+          
+          const fieldWrapper = document.createElement('div');
+          fieldWrapper.className = isFullWidth ? 'sm:col-span-2 space-y-1' : 'space-y-1';
+
+          let inputHtml = '';
+          const inputId = `${prefix}${field.name}`;
+          const inputName = `${prefix}${field.name}`;
+
+          if (field.type === 'textarea') {
+            inputHtml = `
+              <textarea 
+                id="${inputId}" 
+                name="${inputName}" 
+                rows="3" 
+                ${field.required ? 'required' : ''}
+                placeholder="${field.description || field.label || ''}"
+                class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500 custom-scrollbar"
+              >${typeof val === 'object' ? JSON.stringify(val, null, 2) : val}</textarea>
+            `;
+          } else if (field.type === 'array' || field.type === 'object') {
+            const formattedJson = typeof val === 'object' ? JSON.stringify(val, null, 2) : (val || '[]');
+            inputHtml = `
+              <textarea 
+                id="${inputId}" 
+                name="${inputName}" 
+                rows="4" 
+                placeholder="[ { ... } ] (JSON array)"
+                class="w-full p-2.5 bg-slate-900 text-slate-100 font-mono text-[11px] rounded-xl border border-slate-800 focus:outline-none custom-scrollbar"
+              >${formattedJson}</textarea>
+              <span class="text-[10px] text-slate-400">Structured JSON item list</span>
+            `;
+          } else if (field.type === 'boolean') {
+            inputHtml = `
+              <label class="flex items-center gap-2 mt-2 cursor-pointer">
+                <input type="checkbox" id="${inputId}" name="${inputName}" ${val ? 'checked' : ''} class="w-4 h-4 text-sky-600 rounded">
+                <span class="text-xs text-slate-700 font-medium">Enable / Active</span>
+              </label>
+            `;
+          } else {
+            // String, Email, Number, Tel, URL, etc.
+            const inputType = field.type === 'number' ? 'number' : (field.type === 'email' ? 'email' : (field.type === 'url' ? 'url' : 'text'));
+            inputHtml = `
+              <input 
+                id="${inputId}" 
+                name="${inputName}" 
+                type="${inputType}"
+                ${field.required ? 'required' : ''}
+                ${field.min !== undefined ? `min="${field.min}"` : ''}
+                ${field.max !== undefined ? `max="${field.max}"` : ''}
+                value="${typeof val === 'object' ? '' : val}"
+                placeholder="${field.description || field.label || ''}"
+                class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500"
+              />
+            `;
+          }
+
+          fieldWrapper.innerHTML = `
+            <div class="flex items-center justify-between">
+              <label for="${inputId}" class="block text-xs font-semibold text-slate-800">
+                ${field.label || field.name} ${field.required ? '<span class="text-red-500">*</span>' : ''}
+              </label>
+              <span class="text-[10px] text-slate-400 font-mono">${field.type}</span>
+            </div>
+            ${inputHtml}
+          `;
+          grid.appendChild(fieldWrapper);
+        });
+
+        container.appendChild(section);
+      });
+    }
+
+    // --- 3. Subdomain Availability Live Checker ---
+    function handleSubdomainInput(value) {
+      clearTimeout(subdomainDebounceTimer);
+      const cleanVal = value.trim().toLowerCase();
+      const badge = document.getElementById('subdomainCheckBadge');
+
+      if (!cleanVal || cleanVal.length < 3) {
+        badge.innerHTML = '<span class="text-slate-400">Min 3 characters</span>';
+        return;
+      }
+
+      badge.innerHTML = '<span class="text-slate-400 animate-pulse">Checking...</span>';
+      
+      subdomainDebounceTimer = setTimeout(async () => {
+        try {
+          const res = await fetch(`${API_BASE_URL}/api/profiles/check-subdomain/${encodeURIComponent(cleanVal)}`);
+          const json = await res.json();
+          
+          if (json.success && json.available) {
+            badge.innerHTML = '<span class="text-emerald-600 font-bold flex items-center gap-1">✓ Available</span>';
+          } else {
+            badge.innerHTML = `<span class="text-red-600 font-bold flex items-center gap-1">✕ ${json.reason || json.error || 'Unavailable'}</span>`;
+          }
+        } catch (err) {
+          badge.innerHTML = '<span class="text-amber-600">Error checking</span>';
+        }
+      }, 350);
+    }
+
+    function togglePasswordField(enabled) {
+      const container = document.getElementById('passwordInputContainer');
+      container.style.display = enabled ? 'block' : 'none';
+    }
+
+    // --- 4. Submit & Create Profile Handler ---
+    async function handleCreateProfileSubmit(event) {
+      event.preventDefault();
+      
+      const submitBtn = document.getElementById('btnSubmitProfile');
+      const responseLog = document.getElementById('createResponseLog');
+      
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span class="animate-pulse">Publishing profile...</span>';
+      responseLog.innerText = '// Sending POST /api/profiles ...';
+
+      try {
+        const subdomain = document.getElementById('subdomainInput').value.trim().toLowerCase();
+        const templateId = currentSelectedTemplate ? currentSelectedTemplate.id : 'template-01';
+        const passwordEnabled = document.getElementById('enablePasswordCheckbox').checked;
+        const password = passwordEnabled ? document.getElementById('profilePasswordInput').value : '';
+
+        // Harvest all dynamic data.* inputs
+        const dataObj = {};
+        const inputs = document.querySelectorAll('#dynamicFieldsContainer [name^="data."]');
+        
+        inputs.forEach(input => {
+          const key = input.name.replace('data.', '');
+          let val = input.value;
+          
+          if (input.type === 'checkbox') {
+            dataObj[key] = input.checked;
+          } else if (input.tagName === 'TEXTAREA' && (val.trim().startsWith('{') || val.trim().startsWith('['))) {
+            try {
+              dataObj[key] = JSON.parse(val);
+            } catch (e) {
+              dataObj[key] = val;
+            }
+          } else if (input.type === 'number') {
+            dataObj[key] = val === '' ? null : Number(val);
+          } else {
+            dataObj[key] = val;
+          }
+        });
+
+        const payload = {
+          templateId,
+          subdomain,
+          password: password || undefined,
+          passwordEnabled,
+          isPublished: true,
+          data: dataObj
+        };
+
+        const res = await fetch(`${API_BASE_URL}/api/profiles`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const json = await res.json();
+        responseLog.innerText = JSON.stringify(json, null, 2);
+
+        if (res.ok && json.success) {
+          showToast(`Profile "${subdomain}" created successfully!`, 'success');
+          saveProfileToLocalStorage(json.data);
+          
+          // Switch to View Tab and automatically render the profile!
+          setTimeout(() => {
+            document.getElementById('viewSubdomainInput').value = subdomain;
+            switchTab('view');
+            fetchAndRenderPublicProfile(subdomain);
+          }, 800);
+        } else {
+          showToast(json.error || 'Failed to create profile', 'error');
+        }
+      } catch (err) {
+        responseLog.innerText = `Network/Client Error: ${err.message}`;
+        showToast('Error connecting to backend API', 'error');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = `
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+          Publish Profile (POST /api/profiles)
+        `;
+      }
+    }
+
+    // --- 5. View Profile & Live Template Visualizer ---
+    async function fetchAndRenderPublicProfile(subdomain) {
+      if (!subdomain) return;
+      subdomain = subdomain.trim().toLowerCase();
+
+      const wrapper = document.getElementById('renderedProfileWrapper');
+      wrapper.innerHTML = `
+        <div class="p-16 text-center text-slate-400">
+          <div class="w-8 h-8 border-2 border-sky-600 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+          <p class="text-sm font-semibold text-slate-600">Loading public profile for "${subdomain}"...</p>
+        </div>
+      `;
+
+      // Update demo URL link
+      document.getElementById('demoDirectUrl').innerText = `${window.location.origin}${window.location.pathname}?subdomain=${subdomain}`;
+
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/profiles/${encodeURIComponent(subdomain)}`, {
+          headers: { 'x-subdomain': subdomain }
+        });
+        const json = await res.json();
+
+        if (res.ok && json.success && json.data) {
+          renderTemplateView(json.data, wrapper);
+        } else {
+          wrapper.innerHTML = `
+            <div class="p-12 text-center text-slate-500 space-y-3">
+              <div class="w-12 h-12 rounded-full bg-red-50 text-red-500 flex items-center justify-center mx-auto text-xl font-bold">✕</div>
+              <h3 class="text-lg font-bold text-slate-800">Profile Not Found</h3>
+              <p class="text-xs text-slate-500 max-w-sm mx-auto">${json.error || 'No active profile matches this subdomain.'}</p>
+              <button onclick="switchTab('create')" class="px-4 py-2 bg-sky-600 text-white rounded-xl text-xs font-semibold">Create "${subdomain}" Now</button>
+            </div>
+          `;
+        }
+      } catch (err) {
+        wrapper.innerHTML = `
+          <div class="p-12 text-center text-red-500 space-y-2">
+            <h3 class="font-bold">Error Fetching Profile</h3>
+            <p class="text-xs text-slate-500">${err.message}</p>
+          </div>
+        `;
+      }
+    }
+
+    // Custom Visual Renderer according to template design archetypes
+    function renderTemplateView(profile, container) {
+      const data = profile.data || {};
+      const tId = profile.templateId || 'template-01';
+      
+      const title = data.businessName || data.fullName || data.companyName || profile.subdomain;
+      const tagline = data.tagline || data.bio || data.shortBio || data.description || '';
+      const email = data.email || data.contactEmail || '';
+      const phone = data.phone || data.contactNumber || data.whatsappNumber || '';
+      const address = data.address || data.location || '';
+      const bannerUrl = data.bannerImage || data.coverImage || data.heroImage || 'https://images.unsplash.com/photo-1557804506-669a67965ba0?auto=format&fit=crop&w=1200&q=80';
+      const avatarUrl = data.logoUrl || data.avatarUrl || data.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(title)}&background=0284c7&color=fff&size=128`;
+
+      let servicesOrProducts = data.services || data.products || data.portfolioItems || [];
+      if (typeof servicesOrProducts === 'string') {
+        try { servicesOrProducts = JSON.parse(servicesOrProducts); } catch (e) { servicesOrProducts = []; }
+      }
+
+      // Template 02 (Dark Luxury Glass) vs Standard Clean Modern
+      const isDarkTheme = tId === 'template-02';
+
+      container.innerHTML = `
+        <div class="${isDarkTheme ? 'bg-slate-950 text-white' : 'bg-white text-slate-900'} transition min-h-[600px]">
+          
+          <!-- Hero Banner -->
+          <div class="relative h-56 sm:h-72 w-full bg-slate-800 overflow-hidden">
+            <img src="${bannerUrl}" alt="Hero Banner" class="w-full h-full object-cover opacity-80" onerror="this.src='https://images.unsplash.com/photo-1557804506-669a67965ba0?auto=format&fit=crop&w=1200&q=80'" />
+            <div class="absolute inset-0 bg-gradient-to-t ${isDarkTheme ? 'from-slate-950 via-slate-950/40' : 'from-white via-white/20'} to-transparent"></div>
+            
+            <div class="absolute top-4 right-4 flex items-center gap-2">
+              <span class="px-3 py-1 rounded-full text-xs font-mono font-bold ${isDarkTheme ? 'bg-slate-900/90 text-sky-400 border border-slate-700' : 'bg-white/90 text-sky-800 border border-slate-200'} backdrop-blur-sm shadow-sm">
+                ${tId} • ${profile.subdomain}
+              </span>
+            </div>
+          </div>
+
+          <!-- Main Profile Header & Avatar -->
+          <div class="max-w-4xl mx-auto px-6 sm:px-8 -mt-20 relative z-10 space-y-6 pb-12">
+            
+            <div class="flex flex-col sm:flex-row items-center sm:items-end gap-5 text-center sm:text-left">
+              <img 
+                src="${avatarUrl}" 
+                alt="${title}" 
+                class="w-32 h-32 rounded-2xl object-cover border-4 ${isDarkTheme ? 'border-slate-950 shadow-2xl' : 'border-white shadow-lg'} bg-white"
+                onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(title)}&background=0284c7&color=fff&size=128'"
+              />
+              <div class="flex-1 space-y-1">
+                <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                  <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight">${title}</h1>
+                  <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold ${isDarkTheme ? 'bg-emerald-950 text-emerald-300 border border-emerald-800' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'}">Verified</span>
+                </div>
+                <p class="${isDarkTheme ? 'text-slate-400' : 'text-slate-600'} text-sm sm:text-base font-medium max-w-xl">${tagline}</p>
+                <div class="text-xs font-mono ${isDarkTheme ? 'text-slate-500' : 'text-slate-400'}">
+                  https://${profile.subdomain}.${window.location.hostname || 'yourdomain.com'}
+                </div>
+              </div>
+
+              <!-- Quick Action Buttons -->
+              <div class="flex items-center gap-2 mt-2 sm:mt-0">
+                ${phone ? `<a href="tel:${phone}" class="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold rounded-xl shadow transition">Call Now</a>` : ''}
+                ${email ? `<a href="mailto:${email}" class="px-4 py-2 ${isDarkTheme ? 'bg-slate-800 hover:bg-slate-700 text-white' : 'bg-slate-100 hover:bg-slate-200 text-slate-800'} text-xs font-bold rounded-xl transition">Email</a>` : ''}
+              </div>
+            </div>
+
+            <!-- Profile Overview Cards Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
+              
+              <!-- Contact Info Card -->
+              <div class="${isDarkTheme ? 'bg-slate-900 border-slate-800 text-slate-200' : 'bg-slate-50 border-slate-200 text-slate-800'} p-5 rounded-2xl border space-y-3">
+                <h4 class="text-xs font-bold uppercase tracking-wider ${isDarkTheme ? 'text-slate-400' : 'text-slate-500'}">Contact Information</h4>
+                <div class="space-y-2 text-xs">
+                  ${email ? `<div class="flex items-center gap-2"><span>✉️</span><span class="truncate">${email}</span></div>` : ''}
+                  ${phone ? `<div class="flex items-center gap-2"><span>📞</span><span>${phone}</span></div>` : ''}
+                  ${address ? `<div class="flex items-center gap-2"><span>📍</span><span>${address}</span></div>` : ''}
+                  ${!email && !phone && !address ? '<span class="text-slate-400 italic">No contact info provided</span>' : ''}
+                </div>
+              </div>
+
+              <!-- Working Hours / Badges -->
+              <div class="${isDarkTheme ? 'bg-slate-900 border-slate-800 text-slate-200' : 'bg-slate-50 border-slate-200 text-slate-800'} p-5 rounded-2xl border space-y-3">
+                <h4 class="text-xs font-bold uppercase tracking-wider ${isDarkTheme ? 'text-slate-400' : 'text-slate-500'}">Business Details</h4>
+                <div class="space-y-2 text-xs">
+                  <div><strong>Category:</strong> ${data.category || data.industry || 'General Business'}</div>
+                  <div><strong>Status:</strong> ${profile.isPublished ? 'Active & Published' : 'Draft'}</div>
+                  ${data.workingHours ? `<div><strong>Hours:</strong> ${typeof data.workingHours === 'object' ? JSON.stringify(data.workingHours) : data.workingHours}</div>` : ''}
+                </div>
+              </div>
+
+              <!-- Social / Website Links -->
+              <div class="${isDarkTheme ? 'bg-slate-900 border-slate-800 text-slate-200' : 'bg-slate-50 border-slate-200 text-slate-800'} p-5 rounded-2xl border space-y-3">
+                <h4 class="text-xs font-bold uppercase tracking-wider ${isDarkTheme ? 'text-slate-400' : 'text-slate-500'}">Online Presence</h4>
+                <div class="space-y-2 text-xs">
+                  ${data.websiteUrl ? `<a href="${data.websiteUrl}" target="_blank" class="text-sky-500 hover:underline block truncate">🌐 ${data.websiteUrl}</a>` : ''}
+                  ${data.instagram ? `<div class="text-pink-500">📸 @${data.instagram}</div>` : ''}
+                  ${data.facebook ? `<div class="text-blue-500">📘 ${data.facebook}</div>` : ''}
+                  ${!data.websiteUrl && !data.instagram && !data.facebook ? '<span class="text-slate-400 italic">No social links configured</span>' : ''}
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Dynamic Services / Products Section if available -->
+            ${Array.isArray(servicesOrProducts) && servicesOrProducts.length > 0 ? `
+              <div class="pt-6 space-y-4">
+                <h3 class="text-lg font-bold">Offerings & Highlights</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                  ${servicesOrProducts.map(item => `
+                    <div class="${isDarkTheme ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'} p-4 rounded-xl border shadow-xs space-y-2">
+                      <h5 class="font-bold text-sm">${item.name || item.title || 'Item'}</h5>
+                      <p class="text-xs ${isDarkTheme ? 'text-slate-400' : 'text-slate-500'} leading-relaxed">${item.description || item.desc || ''}</p>
+                      ${item.price ? `<span class="text-xs font-bold text-sky-600">${item.price}</span>` : ''}
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            ` : ''}
+
+            <!-- Master Data Inspection Section -->
+            <div class="pt-6 border-t ${isDarkTheme ? 'border-slate-800' : 'border-slate-200'}">
+              <details class="cursor-pointer">
+                <summary class="text-xs font-mono font-semibold text-slate-400 hover:text-sky-500">View Full Master Data Dictionary (JSON)</summary>
+                <pre class="mt-3 p-4 rounded-xl ${isDarkTheme ? 'bg-slate-900 text-slate-300' : 'bg-slate-100 text-slate-800'} text-[11px] font-mono overflow-x-auto">${JSON.stringify(profile, null, 2)}</pre>
+              </details>
+            </div>
+
+          </div>
+
+        </div>
+      `;
+    }
+
+    // --- 6. Edit Session & Verification Flow ---
+    async function handleVerifyPasswordForEdit() {
+      const subdomainOrId = document.getElementById('editSubdomainInput').value.trim().toLowerCase();
+      const password = document.getElementById('editPasswordInput').value;
+
+      if (!subdomainOrId) {
+        showToast('Please enter a subdomain or profile ID', 'error');
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/profiles/${encodeURIComponent(subdomainOrId)}/verify`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password })
+        });
+
+        const json = await res.json();
+
+        if (res.ok && json.success && json.editToken) {
+          currentEditSessionToken = json.editToken;
+          currentEditingProfile = json.data;
+          
+          showToast('Authenticated! Starting Edit Session...', 'success');
+          
+          document.getElementById('editAuthBox').classList.add('hidden');
+          document.getElementById('editSessionContainer').classList.remove('hidden');
+          document.getElementById('editSessionInfo').innerText = `Editing: ${currentEditingProfile.subdomain} (ID: ${currentEditingProfile._id})`;
+
+          // Populate template selector in edit mode
+          const templateSelect = document.getElementById('editTemplateSelect');
+          templateSelect.innerHTML = '';
+          availableTemplates.forEach(t => {
+            const opt = document.createElement('option');
+            opt.value = t.id;
+            opt.innerText = `${t.name} (${t.id})`;
+            if (t.id === currentEditingProfile.templateId) opt.selected = true;
+            templateSelect.appendChild(opt);
+          });
+
+          // Fetch full edit payload
+          await loadEditFormFields(currentEditingProfile._id, currentEditingProfile.templateId);
+        } else {
+          showToast(json.error || 'Password verification failed', 'error');
+        }
+      } catch (err) {
+        showToast(`Verification error: ${err.message}`, 'error');
+      }
+    }
+
+    async function loadEditFormFields(profileId, templateId) {
+      try {
+        // Fetch Master Data
+        const res = await fetch(`${API_BASE_URL}/api/profiles/${profileId}/edit`, {
+          headers: { 'Authorization': `Bearer ${currentEditSessionToken}` }
+        });
+        const json = await res.json();
+        
+        if (json.success && json.data) {
+          currentEditingProfile = json.data;
+          
+          // Fetch template schema
+          const tRes = await fetch(`${API_BASE_URL}/api/templates/${templateId}`);
+          const tJson = await tRes.json();
+          
+          if (tJson.success && tJson.data) {
+            renderDynamicFormFields(tJson.data.schema.fields, 'editDynamicFieldsContainer', 'editData.', currentEditingProfile.data || {});
+          }
+        }
+      } catch (err) {
+        showToast('Error loading edit fields', 'error');
+      }
+    }
+
+    async function handleEditTemplateChange(newTemplateId) {
+      if (!currentEditingProfile) return;
+      showToast(`Switched template to ${newTemplateId}. Master data preserved.`, 'info');
+      await loadEditFormFields(currentEditingProfile._id, newTemplateId);
+    }
+
+    async function handleSaveProfileEdit(event) {
+      event.preventDefault();
+      if (!currentEditingProfile || !currentEditSessionToken) return;
+
+      const templateId = document.getElementById('editTemplateSelect').value;
+      
+      // Collect edited values
+      const dataObj = { ...(currentEditingProfile.data || {}) };
+      const inputs = document.querySelectorAll('#editDynamicFieldsContainer [name^="editData."]');
+
+      inputs.forEach(input => {
+        const key = input.name.replace('editData.', '');
+        let val = input.value;
+        if (input.type === 'checkbox') {
+          dataObj[key] = input.checked;
+        } else if (input.tagName === 'TEXTAREA' && (val.trim().startsWith('{') || val.trim().startsWith('['))) {
+          try { dataObj[key] = JSON.parse(val); } catch (e) { dataObj[key] = val; }
+        } else if (input.type === 'number') {
+          dataObj[key] = val === '' ? null : Number(val);
+        } else {
+          dataObj[key] = val;
+        }
+      });
+
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/profiles/${currentEditingProfile._id}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${currentEditSessionToken}`
+          },
+          body: JSON.stringify({
+            templateId,
+            data: dataObj
+          })
+        });
+
+        const json = await res.json();
+        if (res.ok && json.success) {
+          showToast('Profile updated successfully!', 'success');
+          currentEditingProfile = json.data;
+          
+          // Switch to view tab
+          setTimeout(() => {
+            document.getElementById('viewSubdomainInput').value = currentEditingProfile.subdomain;
+            switchTab('view');
+            fetchAndRenderPublicProfile(currentEditingProfile.subdomain);
+          }, 600);
+        } else {
+          showToast(json.error || 'Failed to update profile', 'error');
+        }
+      } catch (err) {
+        showToast(`Save error: ${err.message}`, 'error');
+      }
+    }
+
+    function logoutEditSession() {
+      currentEditSessionToken = null;
+      currentEditingProfile = null;
+      document.getElementById('editAuthBox').classList.remove('hidden');
+      document.getElementById('editSessionContainer').classList.add('hidden');
+      showToast('Edit session ended', 'info');
+    }
+
+    // --- 7. Raw API Console Executor ---
+    function presetApiRequest(method, endpoint, body = '') {
+      document.getElementById('rawMethod').value = method;
+      document.getElementById('rawEndpoint').value = endpoint;
+      document.getElementById('rawBody').value = body ? JSON.stringify(body, null, 2) : '';
+      switchTab('raw');
+      executeRawApiRequest();
+    }
+
+    async function executeRawApiRequest() {
+      const method = document.getElementById('rawMethod').value;
+      let endpoint = document.getElementById('rawEndpoint').value.trim();
+      if (!endpoint.startsWith('/')) endpoint = '/' + endpoint;
+
+      const bodyText = document.getElementById('rawBody').value.trim();
+      const statusBadge = document.getElementById('rawStatusBadge');
+      const responseEl = document.getElementById('rawResponse');
+
+      statusBadge.innerText = 'Sending...';
+      responseEl.innerText = '// Waiting for response...';
+
+      const options = {
+        method,
+        headers: { 'Content-Type': 'application/json' }
+      };
+
+      if (currentEditSessionToken) {
+        options.headers['Authorization'] = `Bearer ${currentEditSessionToken}`;
+      }
+
+      if (['POST', 'PATCH', 'PUT'].includes(method) && bodyText) {
+        try {
+          options.body = JSON.stringify(JSON.parse(bodyText));
+        } catch (e) {
+          showToast('Invalid JSON in Request Body', 'error');
+          statusBadge.innerText = 'Status: JSON Error';
+          return;
+        }
+      }
+
+      const startTime = performance.now();
+      try {
+        const res = await fetch(`${API_BASE_URL}${endpoint}`, options);
+        const duration = Math.round(performance.now() - startTime);
+        const json = await res.json();
+
+        statusBadge.innerText = `Status: ${res.status} ${res.statusText} (${duration}ms)`;
+        statusBadge.className = `text-[10px] font-mono font-bold ${res.ok ? 'text-emerald-400' : 'text-red-400'}`;
+        responseEl.innerText = JSON.stringify(json, null, 2);
+      } catch (err) {
+        statusBadge.innerText = `Status: Network Error`;
+        statusBadge.className = `text-[10px] font-mono font-bold text-red-400`;
+        responseEl.innerText = `Network/CORS Error: ${err.message}`;
+      }
+    }
+
+    // --- 8. Helper Utilities & Local Storage ---
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active', 'border-sky-600', 'text-sky-600', 'font-semibold');
+        btn.classList.add('border-transparent', 'text-slate-500', 'font-medium');
+      });
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+
+      const activeBtn = document.getElementById(`tab-${tabId}`);
+      if (activeBtn) {
+        activeBtn.classList.add('active', 'border-sky-600', 'text-sky-600', 'font-semibold');
+        activeBtn.classList.remove('border-transparent', 'text-slate-500', 'font-medium');
+      }
+
+      const activeContent = document.getElementById(`view-${tabId}`);
+      if (activeContent) activeContent.classList.remove('hidden');
+    }
+
+    function fillDemoData() {
+      const sampleSubdomain = `shop${Math.floor(Math.random() * 899 + 100)}`;
+      document.getElementById('subdomainInput').value = sampleSubdomain;
+      handleSubdomainInput(sampleSubdomain);
+
+      const sampleValues = {
+        businessName: 'Aura Artisan Bakery & Cafe',
+        fullName: 'Aura Artisan Bakery',
+        tagline: 'Handcrafted Organic Sourdough & Specialty Coffee in downtown',
+        bio: 'Established in 2021, we specialize in 48-hour slow-fermented artisanal breads, French viennoiseries, and single-origin pour overs.',
+        email: `hello@${sampleSubdomain}.com`,
+        phone: '+1 (555) 349-8821',
+        address: '742 Evergreen Terrace, Suite 100',
+        city: 'San Francisco, CA',
+        category: 'Food & Beverage',
+        websiteUrl: 'https://aurabakery.example.com',
+        instagram: 'aura_bakery',
+        facebook: 'aurabakerysf',
+        bannerImage: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=1200&q=80',
+        logoUrl: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=300&q=80',
+        services: [
+          { name: 'Artisan Sourdough Loaf', description: 'Naturally leavened with wild yeast', price: '$8.50' },
+          { name: 'Almond Croissant', description: 'Twice-baked with house frangipane', price: '$5.75' },
+          { name: 'Ethiopian Yirgacheffe V60', description: 'Floral jasmine & bergamot notes', price: '$6.00' }
+        ]
+      };
+
+      Object.entries(sampleValues).forEach(([key, val]) => {
+        const input = document.querySelector(`#dynamicFieldsContainer [name="data.${key}"]`);
+        if (input) {
+          if (input.tagName === 'TEXTAREA' && typeof val === 'object') {
+            input.value = JSON.stringify(val, null, 2);
+          } else {
+            input.value = val;
+          }
+        }
+      });
+
+      showToast('Sample demo data loaded into form!', 'info');
+    }
+
+    function loadSamplePreview() {
+      const sample = {
+        templateId: 'template-01',
+        subdomain: 'aurabakery',
+        isPublished: true,
+        data: {
+          businessName: 'Aura Artisan Bakery & Cafe',
+          tagline: 'Handcrafted Organic Sourdough & Specialty Coffee',
+          bio: 'Slow-fermented artisanal breads, French viennoiseries, and ethically sourced single-origin coffee beans roasted weekly.',
+          email: 'hello@aurabakery.com',
+          phone: '+1 (555) 349-8821',
+          address: '742 Evergreen Terrace, Suite 100',
+          category: 'Bakery & Cafe',
+          websiteUrl: 'https://aurabakery.example.com',
+          bannerImage: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=1200&q=80',
+          logoUrl: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=300&q=80',
+          services: [
+            { name: 'Country Sourdough', description: 'Stoneground organic flour, 48hr ferment', price: '$9.00' },
+            { name: 'Pistachio Pain Suisse', description: 'Laminated pastry with Sicilian pistachio cream', price: '$6.50' },
+            { name: 'Cold Brew Blend', description: 'Steeped for 18 hours with nitro tap', price: '$5.50' }
+          ]
+        }
+      };
+      renderTemplateView(sample, document.getElementById('renderedProfileWrapper'));
+    }
+
+    function refreshTemplatesList() {
+      loadAllTemplates();
+      showToast('Templates reloaded from server', 'info');
+    }
+
+    function saveProfileToLocalStorage(profile) {
+      if (!profile || !profile.subdomain) return;
+      let list = JSON.parse(localStorage.getItem('saved_bp_profiles') || '[]');
+      list = list.filter(p => p.subdomain !== profile.subdomain);
+      list.unshift({
+        id: profile._id,
+        subdomain: profile.subdomain,
+        templateId: profile.templateId,
+        createdAt: new Date().toISOString()
+      });
+      localStorage.setItem('saved_bp_profiles', JSON.stringify(list.slice(0, 10)));
+      renderSavedProfilesWidget();
+    }
+
+    function renderSavedProfilesWidget() {
+      const listContainer = document.getElementById('savedProfilesList');
+      const list = JSON.parse(localStorage.getItem('saved_bp_profiles') || '[]');
+      
+      if (list.length === 0) {
+        listContainer.innerHTML = '<div class="text-slate-400 italic text-center py-3">No profiles created yet</div>';
+        return;
+      }
+
+      listContainer.innerHTML = '';
+      list.forEach(item => {
+        const row = document.createElement('div');
+        row.className = 'flex items-center justify-between p-2 rounded-lg bg-slate-50 hover:bg-slate-100 border border-slate-200 transition';
+        row.innerHTML = `
+          <div>
+            <strong class="font-mono text-slate-800">${item.subdomain}</strong>
+            <span class="text-[10px] text-slate-400 block">${item.templateId}</span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <button onclick="quickViewProfile('${item.subdomain}')" class="px-2 py-1 bg-white border border-slate-200 text-sky-700 font-semibold rounded hover:bg-sky-50 text-[10px]">View</button>
+            <button onclick="quickEditProfile('${item.subdomain}')" class="px-2 py-1 bg-white border border-slate-200 text-slate-700 font-semibold rounded hover:bg-slate-50 text-[10px]">Edit</button>
+          </div>
+        `;
+        listContainer.appendChild(row);
+      });
+    }
+
+    function quickViewProfile(subdomain) {
+      document.getElementById('viewSubdomainInput').value = subdomain;
+      switchTab('view');
+      fetchAndRenderPublicProfile(subdomain);
+    }
+
+    function quickEditProfile(subdomain) {
+      document.getElementById('editSubdomainInput').value = subdomain;
+      switchTab('edit');
+    }
+
+    function clearSavedProfiles() {
+      localStorage.removeItem('saved_bp_profiles');
+      renderSavedProfilesWidget();
+      showToast('Saved profiles cleared', 'info');
+    }
+
+    function copyToClipboard(elementId, isDirectText = false) {
+      const text = isDirectText 
+        ? document.getElementById(elementId).innerText 
+        : document.getElementById(elementId).innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        showToast('Copied to clipboard!', 'info');
+      });
+    }
+
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      
+      const colors = {
+        success: 'bg-emerald-900 text-emerald-100 border-emerald-700',
+        error: 'bg-red-900 text-red-100 border-red-700',
+        info: 'bg-slate-900 text-slate-100 border-slate-700'
+      };
+
+      toast.className = `px-4 py-2.5 rounded-xl text-xs font-semibold border shadow-lg flex items-center justify-between gap-3 transition-all transform duration-200 ${colors[type] || colors.info}`;
+      toast.innerHTML = `
+        <span>${message}</span>
+        <button onclick="this.parentElement.remove()" class="opacity-60 hover:opacity-100">✕</button>
+      `;
+
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+  </script>
+</body>
+</html>

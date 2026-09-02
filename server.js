@@ -111,6 +111,11 @@ app.get('/api/health', (req, res) => {
 // ============================================================================
 app.use('/api', dataRoutes);
 
+// Direct route to serve the standalone mainsite.html client
+app.get('/mainsite.html', (req, res) => {
+  res.sendFile(path.join(process.cwd(), 'mainsite.html'));
+});
+
 // ============================================================================
 // 7. Wildcard Subdomain Routing Fallback Handler
 // ============================================================================

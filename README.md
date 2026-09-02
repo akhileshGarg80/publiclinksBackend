@@ -191,3 +191,21 @@ To add **Template 51** (`template-51`), simply create a single JSON file:
 
 **Zero changes needed in backend code!**
 The backend automatically reads the new template on the fly and starts validating submissions for `template-51`.
+
+---
+
+## 💻 Standalone Demo Client (`mainsite.html`)
+
+A completely independent, self-contained HTML + CSS + JS client is included for testing all backend APIs and subdomain routing without any external dependencies:
+
+- **Local Live Server (Port 5500)**: `http://127.0.0.1:5500/publiclinksBackend/mainsite.html` or `http://127.0.0.1:5500/mainsite.html`
+- **Direct Backend URL**: `http://localhost:5000/mainsite.html` or `http://localhost:3000/mainsite.html`
+- **Subdomain Direct Demo**: `http://127.0.0.1:5500/publiclinksBackend/mainsite.html?subdomain=abcshop`
+
+### Features in `mainsite.html`:
+1. **Dynamic Template Explorer**: Fetches `GET /api/templates` and dynamically generates form inputs from template schema definitions.
+2. **Live Subdomain Availability Checker**: Real-time debounce check on `GET /api/profiles/check-subdomain/:subdomain`.
+3. **Interactive Visual Renderer**: Renders live responsive business profile layouts (Hero banner, logo, business description, contact options, opening hours, products/services, and social links).
+4. **JWT Edit Session Flow**: Verifies password on `POST /api/profiles/:id/verify`, loads master data via `GET /api/profiles/:id/edit`, and allows switching templates seamlessly via `PATCH /api/profiles/:id`.
+5. **Raw API Console**: Test any endpoint directly with status code and latency inspector.
+
