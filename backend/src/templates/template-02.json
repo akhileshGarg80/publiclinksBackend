@@ -1,0 +1,77 @@
+{
+  "templateId": "template-02",
+  "name": "Product & Store Showcase",
+  "category": "E-Commerce & Retail",
+  "description": "Showcase featured products, direct pricing, hero promotional image, and catalog items.",
+  "previewImage": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=600&q=80",
+  "theme": {
+    "accentColor": "#059669",
+    "layout": "grid-catalog"
+  },
+  "fields": {
+    "name": {
+      "type": "text",
+      "label": "Store / Product Name",
+      "placeholder": "e.g. ABC Shop - Mobile & Accessories",
+      "required": true,
+      "validation": {
+        "minLength": 2,
+        "maxLength": 100
+      }
+    },
+    "description": {
+      "type": "textarea",
+      "label": "Shop Description",
+      "placeholder": "Best electronics, gadgets, and quality smartphone accessories...",
+      "required": false,
+      "validation": {
+        "maxLength": 800
+      }
+    },
+    "image": {
+      "type": "image",
+      "label": "Hero Banner / Product Image URL",
+      "placeholder": "https://i.ibb.co/...",
+      "required": true,
+      "validation": {
+        "isUrl": true
+      }
+    },
+    "price": {
+      "type": "number",
+      "label": "Starting / Featured Price (₹ or $)",
+      "placeholder": "599",
+      "required": true,
+      "validation": {
+        "min": 0,
+        "max": 10000000
+      }
+    },
+    "location": {
+      "type": "location",
+      "label": "Shop Address / City",
+      "placeholder": "e.g. Satna, Madhya Pradesh",
+      "required": false
+    },
+    "whatsapp": {
+      "type": "social-links",
+      "label": "WhatsApp Order Number",
+      "placeholder": "+919876543210",
+      "required": false
+    },
+    "products": {
+      "type": "product-list",
+      "label": "Product Catalog Items",
+      "required": false,
+      "limits": {
+        "maxItems": 50
+      },
+      "itemSchema": {
+        "title": { "type": "text", "required": true },
+        "price": { "type": "number", "required": true },
+        "image": { "type": "image", "required": false },
+        "description": { "type": "text", "required": false }
+      }
+    }
+  }
+}

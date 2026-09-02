@@ -1,0 +1,57 @@
+{
+  "templateId": "template-03",
+  "name": "Creative Agency & Studio",
+  "category": "Portfolio & Agency",
+  "description": "Bold visual aesthetic designed for studios, consultants, architects, and freelance professionals.",
+  "previewImage": "https://images.unsplash.com/photo-1497215728101-856f4ea42174?auto=format&fit=crop&w=600&q=80",
+  "theme": {
+    "accentColor": "#2563EB",
+    "layout": "editorial"
+  },
+  "fields": {
+    "name": {
+      "type": "text",
+      "label": "Agency / Brand Name",
+      "placeholder": "e.g. Apex Design Labs",
+      "required": true,
+      "validation": { "minLength": 2, "maxLength": 100 }
+    },
+    "headline": {
+      "type": "text",
+      "label": "Tagline / Value Proposition",
+      "placeholder": "We design high-impact digital experiences",
+      "required": true
+    },
+    "description": {
+      "type": "textarea",
+      "label": "About Studio",
+      "required": false
+    },
+    "logo": {
+      "type": "image",
+      "label": "Studio Logo URL",
+      "required": true
+    },
+    "gallery": {
+      "type": "image-list",
+      "label": "Portfolio Highlights",
+      "required": false,
+      "limits": { "maxItems": 12 }
+    },
+    "services": {
+      "type": "product-list",
+      "label": "Services Offered",
+      "required": false
+    },
+    "whatsapp": {
+      "type": "social-links",
+      "label": "Direct Inquiry WhatsApp",
+      "required": false
+    },
+    "location": {
+      "type": "location",
+      "label": "Studio Location",
+      "required": false
+    }
+  }
+}

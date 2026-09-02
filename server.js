@@ -12,10 +12,10 @@ import rateLimit from 'express-rate-limit';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
-import connectDB, { getDatabaseStatus } from './config/db.js';
-import { PORT, CORS_ORIGIN, extractSubdomain, MAIN_DOMAIN, FRONTEND_URL, BACKEND_URL } from './dns.js';
-import dataRoutes from './src/dataCollection/dataRoutes.js';
-import { getAllTemplateDefinitions } from './src/templates/templateLoader.js';
+import connectDB, { getDatabaseStatus } from './backend/src/config/db.js';
+import { CORS_ORIGIN, extractSubdomain, MAIN_DOMAIN, FRONTEND_URL, BACKEND_URL } from './backend/src/dns.js';
+import dataRoutes from './backend/src/dataCollection/dataRoutes.js';
+import { getAllTemplateDefinitions } from './backend/src/templates/templateLoader.js';
 
 dotenv.config();
 
@@ -23,6 +23,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
+const PORT = 3000;
 
 // ============================================================================
 // 1. Security & Headers Middleware
@@ -114,13 +115,15 @@ app.get('/api/health', (req, res) => {
 // ============================================================================
 app.use('/api', dataRoutes);
 
-// Direct route to serve the standalone mainsite.html client and standalone profile pages
-app.get('/mainsite.html', (req, res) => {
-  res.sendFile(path.join(process.cwd(), 'mainsite.html'));
+// Direct route to serve the frontend client and standalone profile pages
+app.use('/frontend', express.static(path.join(process.cwd(), 'frontend')));
+
+app.get(['/mainsite.html', '/index.html'], (req, res) => {
+  res.sendFile(path.join(process.cwd(), 'frontend', 'index.html'));
 });
 
 app.get(['/profile/:subdomain', '/p/:subdomain'], (req, res) => {
-  res.sendFile(path.join(process.cwd(), 'mainsite.html'));
+  res.sendFile(path.join(process.cwd(), 'frontend', 'index.html'));
 });
 
 // ============================================================================

@@ -1,0 +1,70 @@
+{
+  "templateId": "template-01",
+  "name": "Minimal Digital Card",
+  "category": "Personal & Professional",
+  "description": "Clean, modern single-card profile with avatar, bio, headline, and direct contact buttons.",
+  "previewImage": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80",
+  "theme": {
+    "accentColor": "#4F46E5",
+    "layout": "centered-card"
+  },
+  "fields": {
+    "name": {
+      "type": "text",
+      "label": "Full Name / Title",
+      "placeholder": "e.g. Alex Morgan",
+      "required": true,
+      "validation": {
+        "minLength": 2,
+        "maxLength": 80
+      }
+    },
+    "headline": {
+      "type": "text",
+      "label": "Professional Headline",
+      "placeholder": "e.g. Creative Technologist & Brand Consultant",
+      "required": false,
+      "validation": {
+        "maxLength": 140
+      }
+    },
+    "bio": {
+      "type": "textarea",
+      "label": "Short Bio",
+      "placeholder": "Brief introduction about yourself or your business...",
+      "required": false,
+      "validation": {
+        "maxLength": 600
+      }
+    },
+    "avatar": {
+      "type": "image",
+      "label": "Profile Picture / Avatar URL",
+      "placeholder": "https://i.ibb.co/...",
+      "required": true,
+      "validation": {
+        "isUrl": true
+      }
+    },
+    "location": {
+      "type": "location",
+      "label": "City / Location",
+      "placeholder": "e.g. Mumbai, India",
+      "required": false,
+      "validation": {
+        "maxLength": 100
+      }
+    },
+    "whatsapp": {
+      "type": "social-links",
+      "label": "WhatsApp Contact",
+      "placeholder": "e.g. +919876543210 or wa.me/...",
+      "required": false
+    },
+    "socialLinks": {
+      "type": "social-links",
+      "label": "Social Profiles (LinkedIn, Instagram, X)",
+      "required": false
+    }
+  }
+}

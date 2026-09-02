@@ -1,0 +1,57 @@
+{
+  "templateId": "template-07",
+  "name": "Food, Cafe & Restaurant Menu",
+  "category": "Food & Beverage",
+  "description": "Digital food menu with categories, specials, appetizing images, location, and WhatsApp table booking.",
+  "previewImage": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=600&q=80",
+  "theme": {
+    "accentColor": "#EA580C",
+    "layout": "restaurant-menu"
+  },
+  "fields": {
+    "name": {
+      "type": "text",
+      "label": "Business Name / Cafe Name",
+      "placeholder": "e.g. Royal Spice Bistro",
+      "required": true,
+      "validation": { "minLength": 2, "maxLength": 100 }
+    },
+    "description": {
+      "type": "textarea",
+      "label": "Cafe Story & Dining Timings",
+      "placeholder": "Authentic woodfired pizzas, specialty roasted coffee, and artisan desserts...",
+      "required": false
+    },
+    "logo": {
+      "type": "image",
+      "label": "Brand Logo / Facade URL",
+      "required": true
+    },
+    "location": {
+      "type": "location",
+      "label": "Restaurant Address & City",
+      "placeholder": "e.g. Near City Center, Civil Lines, Satna",
+      "required": true
+    },
+    "whatsapp": {
+      "type": "social-links",
+      "label": "WhatsApp Booking / Order Number",
+      "placeholder": "+919876543210",
+      "required": true
+    },
+    "menu": {
+      "type": "product-list",
+      "label": "Menu Dishes & Categories",
+      "required": false,
+      "limits": { "maxItems": 100 },
+      "itemSchema": {
+        "title": { "type": "text", "required": true },
+        "price": { "type": "number", "required": true },
+        "category": { "type": "text", "required": false },
+        "description": { "type": "text", "required": false },
+        "image": { "type": "image", "required": false },
+        "isVeg": { "type": "boolean", "required": false }
+      }
+    }
+  }
+}
