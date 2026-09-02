@@ -628,21 +628,28 @@
 
     // --- 2. Template Loader & Dynamic Form Generator ---
     async function loadAllTemplates() {
+      const grid = document.getElementById('templatesGrid');
+      grid.innerHTML = '<div class="animate-pulse bg-white p-4 rounded-xl border border-slate-200 h-32 flex items-center justify-center text-xs text-slate-400">Loading templates...</div>';
       try {
         const res = await fetch(`${API_BASE_URL}/api/templates`);
         const json = await res.json();
         
-        if (json.success && Array.isArray(json.data)) {
-          availableTemplates = json.data;
+        const templates = json.templates || json.data || (Array.isArray(json) ? json : []);
+        if (Array.isArray(templates) && templates.length > 0) {
+          availableTemplates = templates;
           renderTemplateCards(availableTemplates);
           
           // Select first template by default if none selected
-          if (!currentSelectedTemplate && availableTemplates.length > 0) {
-            selectTemplate(availableTemplates[0].id);
+          const firstTId = templates[0].templateId || templates[0].id;
+          if (!currentSelectedTemplate && firstTId) {
+            await selectTemplate(firstTId);
           }
+        } else {
+          grid.innerHTML = '<div class="p-4 text-xs text-amber-600">No templates found on server.</div>';
         }
       } catch (err) {
         console.error('Failed to load templates:', err);
+        grid.innerHTML = `<div class="p-4 text-xs text-red-500">Failed to load templates: ${err.message}</div>`;
       }
     }
 
@@ -651,26 +658,28 @@
       grid.innerHTML = '';
 
       templates.forEach(t => {
-        const isSelected = currentSelectedTemplate && currentSelectedTemplate.id === t.id;
+        const tId = t.templateId || t.id;
+        const currentTId = currentSelectedTemplate ? (currentSelectedTemplate.templateId || currentSelectedTemplate.id) : null;
+        const isSelected = currentTId === tId;
         const card = document.createElement('div');
         card.className = `cursor-pointer p-4 rounded-xl border transition text-left flex flex-col justify-between ${
           isSelected 
             ? 'bg-sky-50 border-sky-500 ring-2 ring-sky-500/20 shadow-sm' 
             : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50'
         }`;
-        card.onclick = () => selectTemplate(t.id);
+        card.onclick = () => selectTemplate(tId);
 
         card.innerHTML = `
           <div>
             <div class="flex items-center justify-between mb-1.5">
-              <span class="font-mono text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-700">${t.id}</span>
+              <span class="font-mono text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-700">${tId}</span>
               <span class="text-[10px] text-slate-400 font-medium">${t.category || 'General'}</span>
             </div>
             <h4 class="font-bold text-slate-900 text-xs">${t.name}</h4>
             <p class="text-[11px] text-slate-500 line-clamp-2 mt-1 leading-snug">${t.description || ''}</p>
           </div>
           <div class="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-400">
-            <span>Fields: ${t.fieldCount || (t.schema && t.schema.fields ? t.schema.fields.length : '-')}</span>
+            <span>Fields: ${t.fieldCount || (t.fields ? Object.keys(t.fields).length : '-')}</span>
             <span class="${isSelected ? 'text-sky-600 font-bold' : 'text-slate-400'}">${isSelected ? 'Selected ✓' : 'Select →'}</span>
           </div>
         `;
@@ -679,24 +688,52 @@
     }
 
     async function selectTemplate(templateId) {
+      if (!templateId) return;
       try {
         const res = await fetch(`${API_BASE_URL}/api/templates/${templateId}`);
         const json = await res.json();
+        const template = json.template || json.data || json;
         
-        if (json.success && json.data) {
-          currentSelectedTemplate = json.data;
-          document.getElementById('selectedTemplateBadge').innerText = currentSelectedTemplate.id;
+        if (template && (template.templateId || template.id)) {
+          currentSelectedTemplate = template;
+          const currentId = template.templateId || template.id;
+          document.getElementById('selectedTemplateBadge').innerText = currentId;
           renderTemplateCards(availableTemplates);
-          renderDynamicFormFields(currentSelectedTemplate.schema.fields, 'dynamicFieldsContainer', 'data.');
+          
+          const rawFields = template.fields || (template.schema && template.schema.fields) || [];
+          renderDynamicFormFields(rawFields, 'dynamicFieldsContainer', 'data.');
         }
       } catch (err) {
+        console.error('Failed to select template:', err);
         showToast(`Failed to load schema for ${templateId}`, 'error');
       }
     }
 
-    function renderDynamicFormFields(fields, containerId, prefix = 'data.', existingValues = {}) {
+    function renderDynamicFormFields(rawFields, containerId, prefix = 'data.', existingValues = {}) {
       const container = document.getElementById(containerId);
       container.innerHTML = '';
+
+      // Normalize fields from Object or Array into standard array of field definitions
+      let fields = [];
+      if (Array.isArray(rawFields)) {
+        fields = rawFields;
+      } else if (rawFields && typeof rawFields === 'object') {
+        fields = Object.entries(rawFields).map(([name, conf]) => ({
+          name,
+          label: conf.label || name,
+          type: conf.type || 'text',
+          placeholder: conf.placeholder || '',
+          description: conf.description || '',
+          required: Boolean(conf.required),
+          defaultValue: conf.defaultValue,
+          options: conf.options
+        }));
+      }
+
+      if (fields.length === 0) {
+        container.innerHTML = '<div class="text-xs text-slate-400 py-3">No dynamic fields required for this template.</div>';
+        return;
+      }
 
       // Group fields by category or logical sections
       const fieldGroups = {
@@ -708,7 +745,7 @@
       };
 
       fields.forEach(f => {
-        const name = f.name.toLowerCase();
+        const name = (f.name || '').toLowerCase();
         if (name.includes('phone') || name.includes('email') || name.includes('address') || name.includes('city') || name.includes('map') || name.includes('whatsapp')) {
           fieldGroups['Contact & Location'].push(f);
         } else if (name.includes('image') || name.includes('banner') || name.includes('logo') || name.includes('avatar') || name.includes('photo') || name.includes('color')) {
@@ -751,7 +788,7 @@
                 name="${inputName}" 
                 rows="3" 
                 ${field.required ? 'required' : ''}
-                placeholder="${field.description || field.label || ''}"
+                placeholder="${field.placeholder || field.description || field.label || ''}"
                 class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500 custom-scrollbar"
               >${typeof val === 'object' ? JSON.stringify(val, null, 2) : val}</textarea>
             `;
@@ -774,6 +811,94 @@
                 <span class="text-xs text-slate-700 font-medium">Enable / Active</span>
               </label>
             `;
+          } else if (
+            field.type === 'image' || 
+            field.name.toLowerCase().includes('image') || 
+            field.name.toLowerCase().includes('banner') || 
+            field.name.toLowerCase().includes('logo') || 
+            field.name.toLowerCase().includes('avatar') || 
+            field.name.toLowerCase().includes('photo') || 
+            field.name.toLowerCase().includes('cover')
+          ) {
+            // Dedicated Image Uploader with ImgBB / Server Integration + Preview
+            const fileInputId = `${inputId}_file`;
+            const previewId = `${inputId}_preview`;
+            const statusId = `${inputId}_status`;
+            const initialVal = typeof val === 'object' ? '' : (val || '');
+
+            inputHtml = `
+              <div class="space-y-2">
+                <div class="flex items-center gap-2">
+                  <input 
+                    id="${inputId}" 
+                    name="${inputName}" 
+                    type="url"
+                    ${field.required ? 'required' : ''}
+                    value="${initialVal}"
+                    oninput="handleManualImageUrlInput('${inputId}', '${previewId}')"
+                    placeholder="https://i.ibb.co/... or upload below"
+                    class="flex-1 px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                  />
+                  <button 
+                    type="button" 
+                    onclick="document.getElementById('${fileInputId}').click()" 
+                    class="px-3 py-2 bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 rounded-xl text-xs font-semibold transition flex items-center gap-1.5 whitespace-nowrap shadow-xs"
+                  >
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                    <span>Choose Image</span>
+                  </button>
+                  <input 
+                    type="file" 
+                    id="${fileInputId}" 
+                    accept="image/*" 
+                    class="hidden" 
+                    onchange="handleImageFileSelect(this, '${inputId}', '${previewId}', '${statusId}')" 
+                  />
+                </div>
+
+                <!-- Dropzone / Quick upload helper & status -->
+                <div 
+                  id="${inputId}_dropzone"
+                  ondragover="event.preventDefault(); this.classList.add('border-sky-500', 'bg-sky-50/50');"
+                  ondragleave="this.classList.remove('border-sky-500', 'bg-sky-50/50');"
+                  ondrop="event.preventDefault(); this.classList.remove('border-sky-500', 'bg-sky-50/50'); if(event.dataTransfer.files[0]) uploadImageFile(event.dataTransfer.files[0], '${inputId}', '${previewId}', '${statusId}');"
+                  class="border border-dashed border-slate-200 rounded-xl p-2.5 bg-slate-50/50 flex flex-wrap items-center justify-between gap-2 text-[11px] transition cursor-pointer hover:border-slate-300"
+                  onclick="if(event.target.tagName !== 'BUTTON' && !event.target.closest('button')) document.getElementById('${fileInputId}').click()"
+                >
+                  <div class="flex items-center gap-2 text-slate-500">
+                    <span class="w-2 h-2 rounded-full bg-sky-500"></span>
+                    <span>Click or drag image file here (Auto-uploads to ImgBB / Server)</span>
+                  </div>
+                  <div id="${statusId}" class="text-[11px] font-medium text-slate-400">
+                    Supports JPG, PNG, WebP, GIF (Max 10MB)
+                  </div>
+                </div>
+
+                <!-- Live Image Preview Card -->
+                <div id="${previewId}" class="${initialVal ? 'block' : 'hidden'} mt-2 p-2 bg-slate-100 rounded-xl border border-slate-200 flex items-center justify-between gap-3">
+                  <div class="flex items-center gap-2.5 overflow-hidden">
+                    <img 
+                      id="${previewId}_img" 
+                      src="${initialVal || ''}" 
+                      alt="Preview" 
+                      class="w-12 h-12 rounded-lg object-cover bg-white border border-slate-200 shadow-xs flex-shrink-0"
+                      onerror="this.src='https://placehold.co/100x100?text=No+Image'"
+                    />
+                    <div class="overflow-hidden">
+                      <p class="text-xs font-semibold text-slate-800 truncate">${field.label || field.name}</p>
+                      <p id="${previewId}_url" class="text-[10px] text-slate-500 font-mono truncate">${initialVal}</p>
+                    </div>
+                  </div>
+                  <button 
+                    type="button" 
+                    onclick="clearImageFieldValue('${inputId}', '${previewId}', '${statusId}')" 
+                    class="px-2 py-1 text-[11px] font-semibold text-red-600 hover:text-white hover:bg-red-500 rounded-lg transition border border-red-200 hover:border-red-500 flex-shrink-0"
+                  >
+                    Remove
+                  </button>
+                </div>
+              </div>
+            `;
           } else {
             // String, Email, Number, Tel, URL, etc.
             const inputType = field.type === 'number' ? 'number' : (field.type === 'email' ? 'email' : (field.type === 'url' ? 'url' : 'text'));
@@ -786,7 +911,7 @@
                 ${field.min !== undefined ? `min="${field.min}"` : ''}
                 ${field.max !== undefined ? `max="${field.max}"` : ''}
                 value="${typeof val === 'object' ? '' : val}"
-                placeholder="${field.description || field.label || ''}"
+                placeholder="${field.placeholder || field.description || field.label || ''}"
                 class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500"
               />
             `;
@@ -806,6 +931,116 @@
 
         container.appendChild(section);
       });
+    }
+
+    // --- Image Upload & ImgBB / Server Integration Helpers ---
+    function handleImageFileSelect(inputElement, targetInputId, previewContainerId, statusBadgeId) {
+      if (inputElement.files && inputElement.files[0]) {
+        uploadImageFile(inputElement.files[0], targetInputId, previewContainerId, statusBadgeId);
+      }
+    }
+
+    async function uploadImageFile(file, targetInputId, previewContainerId, statusBadgeId) {
+      if (!file) return;
+
+      if (!file.type.startsWith('image/')) {
+        showToast('Please select a valid image file (PNG, JPG, WebP, GIF)', 'error');
+        return;
+      }
+
+      if (file.size > 10 * 1024 * 1024) {
+        showToast('Image size exceeds 10MB limit', 'error');
+        return;
+      }
+
+      const statusBadge = document.getElementById(statusBadgeId);
+      const targetInput = document.getElementById(targetInputId);
+      const previewContainer = document.getElementById(previewContainerId);
+
+      if (statusBadge) {
+        statusBadge.innerHTML = `
+          <span class="text-sky-600 font-semibold flex items-center gap-1">
+            <svg class="w-3.5 h-3.5 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <circle cx="12" cy="12" r="10" stroke-width="4" stroke-dasharray="32" stroke-linecap="round"></circle>
+            </svg> 
+            Uploading to ImgBB / Server...
+          </span>
+        `;
+      }
+
+      try {
+        const formData = new FormData();
+        formData.append('image', file);
+
+        const res = await fetch(`${API_BASE_URL}/api/upload`, {
+          method: 'POST',
+          body: formData
+        });
+
+        const json = await res.json();
+
+        if (res.ok && json.success && json.url) {
+          if (targetInput) {
+            targetInput.value = json.url;
+            targetInput.dispatchEvent(new Event('input', { bubbles: true }));
+          }
+
+          if (statusBadge) {
+            const providerName = json.provider === 'imgbb' ? 'ImgBB' : 'Cloud Server';
+            statusBadge.innerHTML = `<span class="text-emerald-600 font-bold flex items-center gap-1">✓ Uploaded to ${providerName}</span>`;
+          }
+
+          handleManualImageUrlInput(targetInputId, previewContainerId);
+          showToast(`Image uploaded successfully! (${json.provider === 'imgbb' ? 'ImgBB' : 'Storage'})`, 'success');
+        } else {
+          throw new Error(json.error || 'Upload failed');
+        }
+      } catch (err) {
+        console.error('Image upload failed:', err);
+        if (statusBadge) {
+          statusBadge.innerHTML = `<span class="text-red-500 font-medium">✕ Upload failed: ${err.message}</span>`;
+        }
+        showToast(`Image upload failed: ${err.message}`, 'error');
+      }
+    }
+
+    function handleManualImageUrlInput(targetInputId, previewContainerId) {
+      const input = document.getElementById(targetInputId);
+      const preview = document.getElementById(previewContainerId);
+      if (!input || !preview) return;
+
+      const url = input.value.trim();
+      const img = document.getElementById(`${previewContainerId}_img`);
+      const urlText = document.getElementById(`${previewContainerId}_url`);
+
+      if (url && (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:image/') || url.startsWith('/uploads/'))) {
+        preview.classList.remove('hidden');
+        preview.classList.add('block');
+        if (img) img.src = url;
+        if (urlText) urlText.innerText = url;
+      } else {
+        preview.classList.remove('block');
+        preview.classList.add('hidden');
+      }
+    }
+
+    function clearImageFieldValue(targetInputId, previewContainerId, statusBadgeId) {
+      const input = document.getElementById(targetInputId);
+      const preview = document.getElementById(previewContainerId);
+      const statusBadge = document.getElementById(statusBadgeId);
+
+      if (input) {
+        input.value = '';
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+      if (preview) {
+        preview.classList.remove('block');
+        preview.classList.add('hidden');
+      }
+      if (statusBadge) {
+        statusBadge.innerHTML = 'Supports JPG, PNG, WebP, GIF (Max 10MB)';
+      }
+      showToast('Image removed', 'info');
     }
 
     // --- 3. Subdomain Availability Live Checker ---
@@ -1134,9 +1369,10 @@
           templateSelect.innerHTML = '';
           availableTemplates.forEach(t => {
             const opt = document.createElement('option');
-            opt.value = t.id;
-            opt.innerText = `${t.name} (${t.id})`;
-            if (t.id === currentEditingProfile.templateId) opt.selected = true;
+            const tId = t.templateId || t.id;
+            opt.value = tId;
+            opt.innerText = `${t.name} (${tId})`;
+            if (tId === currentEditingProfile.templateId) opt.selected = true;
             templateSelect.appendChild(opt);
           });
 
@@ -1164,9 +1400,11 @@
           // Fetch template schema
           const tRes = await fetch(`${API_BASE_URL}/api/templates/${templateId}`);
           const tJson = await tRes.json();
+          const tData = tJson.template || tJson.data || tJson;
           
-          if (tJson.success && tJson.data) {
-            renderDynamicFormFields(tJson.data.schema.fields, 'editDynamicFieldsContainer', 'editData.', currentEditingProfile.data || {});
+          if (tData) {
+            const rawFields = tData.fields || (tData.schema && tData.schema.fields) || [];
+            renderDynamicFormFields(rawFields, 'editDynamicFieldsContainer', 'editData.', currentEditingProfile.data || {});
           }
         }
       } catch (err) {

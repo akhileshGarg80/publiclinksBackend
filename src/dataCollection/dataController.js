@@ -63,7 +63,8 @@ export async function getTemplates(req, res) {
     return res.status(200).json({
       success: true,
       count: summaryList.length,
-      templates: summaryList
+      templates: summaryList,
+      data: summaryList
     });
   } catch (error) {
     return res.status(500).json({
@@ -92,7 +93,8 @@ export async function getTemplateById(req, res) {
 
     return res.status(200).json({
       success: true,
-      template
+      template,
+      data: template
     });
   } catch (error) {
     return res.status(500).json({

@@ -22,6 +22,7 @@ import {
   verifyEditAuthMiddleware,
   validateSubdomainMiddleware
 } from './dataMiddleware.js';
+import { uploadMiddleware, handleImageUpload } from './uploadController.js';
 
 const router = express.Router();
 
@@ -58,14 +59,17 @@ router.patch('/profiles/:id', verifyEditAuthMiddleware, updateProfile);
 router.get('/profiles/:subdomain', getPublicProfile);
 
 // ==========================================
-// 3. ImgBB Upload Helper (Optional Utility)
+// 3. Image Upload Routes (ImgBB Proxy & Fallback)
 // ==========================================
-router.post('/upload/info', (req, res) => {
+// Handles multipart/form-data ("image" field) or base64 JSON payload
+router.post('/upload', uploadMiddleware, handleImageUpload);
+router.post('/upload/image', uploadMiddleware, handleImageUpload);
+
+router.get('/upload/info', (req, res) => {
   res.status(200).json({
     success: true,
-    message: 'Images should be uploaded directly to ImgBB from frontend, and the resulting URL saved into the form state.',
-    provider: 'ImgBB',
-    hasApiKey: Boolean(process.env.IMGBB_API_KEY)
+    message: 'ImgBB proxy & Server upload endpoint ready at POST /api/upload',
+    hasImgbbApiKey: Boolean(process.env.IMGBB_API_KEY && process.env.IMGBB_API_KEY !== 'your_imgbb_api_key_here')
   });
 });
 
